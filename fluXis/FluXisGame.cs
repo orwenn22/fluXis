@@ -207,8 +207,10 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
             }
         }, false));
 
+        /*
         LoadQueue.Push(new LoadTask("Checking for bundled maps...", MapStore.DownloadBundledMaps, false));
         LoadQueue.Push(new LoadTask("Loading collections...", Collections.Fetch, false));
+        */
 
         Audio.AddAdjustment(AdjustableProperty.Volume, inactiveVolume);
 

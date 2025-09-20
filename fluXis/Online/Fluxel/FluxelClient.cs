@@ -143,7 +143,9 @@ public partial class FluxelClient : Component, IAPIClient, INotificationClient
 
     public void PullServerConfig(Action complete, Action<Exception> failure)
     {
-        try
+        failure.Invoke(new Exception("No lol"));
+
+        /*try
         {
             Endpoint = new EndpointConfig(configUrl);
 
@@ -170,7 +172,7 @@ public partial class FluxelClient : Component, IAPIClient, INotificationClient
         {
             Logger.Error(ex, "Failed to pull server config!", LoggingTarget.Network);
             failure.Invoke(ex);
-        }
+        }*/
     }
 
     public void TryConnecting()
