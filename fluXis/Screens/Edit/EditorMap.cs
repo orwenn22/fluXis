@@ -184,6 +184,8 @@ public class EditorMap : IVerifyContext
             return false;
 
         RealmMap.KeyCount = mode;
+        //not doing this causes the game to crash after using InsertMiddleLaneAction when trying to populate scroll groups, but only if the map has been saved once before
+        if (MapInfo.RealmEntry != null) MapInfo.RealmEntry.KeyCount = mode;
         KeyModeChanged?.Invoke(mode);
         AnyChange?.Invoke(null);
         return true;

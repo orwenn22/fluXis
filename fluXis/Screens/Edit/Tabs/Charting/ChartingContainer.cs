@@ -7,6 +7,7 @@ using fluXis.Graphics.Sprites.Icons;
 using fluXis.Map.Structures;
 using fluXis.Online.API.Models.Maps;
 using fluXis.Overlay.Notifications;
+using fluXis.Screens.Edit.Actions;
 using fluXis.Screens.Edit.Actions.Events;
 using fluXis.Screens.Edit.Actions.Notes;
 using fluXis.Screens.Edit.Actions.Notes.Shortcuts;
@@ -383,6 +384,29 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
             objects = HitObjects.Select(h => h.Data).ToList();
 
         ActionStack.Add(new NoteReSnapAction(objects, snaps.SnapTime, settings.SnapDivisor));
+    }
+
+    public void AddMiddleLane()
+    {
+        if (Map.RealmMap.KeyCount % 2 == 1)
+        {
+            notifications.SendSmallText("This action is only available for maps with even key count.");
+            return;
+        }
+
+        //only select hitobjects on the right side of the map
+        var editorHitObjects = HitObjects.Where(x => x.Data.Lane > Map.RealmMap.KeyCount / 2).ToList();
+
+        if (!editorHitObjects.Any())
+        {
+            notifications.SendSmallText("No objects on lane superior to " + Map.RealmMap.KeyCount / 2);
+            return;
+        }
+
+        List<HitObject> objects = new();
+        foreach (var editorHitObject in editorHitObjects) objects.Add(editorHitObject.Data);
+
+        ActionStack.Add(new InsertMiddleLaneAction(objects, Map));
     }
 
     public void Copy(bool deleteAfter = false)
