@@ -12,7 +12,7 @@ namespace fluXis.Desktop;
 
 public partial class FluXisGameDesktop : FluXisGame
 {
-    protected override bool RequiresSteam => true;
+    protected override bool RequiresSteam => false;
 
     private IPCImportChannel ipc;
 
