@@ -52,6 +52,7 @@ public partial class EditorKeybindingContainer : KeyBindingContainer<EditorKeybi
         new(new KeyCombination(InputKey.Control, InputKey.B), EditorKeybinding.AddNote),
         new(new KeyCombination(InputKey.Shift, InputKey.Left), EditorKeybinding.PreviousNote),
         new(new KeyCombination(InputKey.Shift, InputKey.Right), EditorKeybinding.NextNote),
+        new(new KeyCombination(InputKey.Alt), EditorKeybinding.ShowAltKeyCounts)
     };
 
     private void loadKeymap()

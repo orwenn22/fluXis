@@ -1,21 +1,27 @@
+using System.Collections.Generic;
 using System.Linq;
 using fluXis.Audio;
 using fluXis.Graphics.Drawables;
 using fluXis.Graphics.Sprites.Text;
 using fluXis.Graphics.UserInterface.Color;
 using fluXis.Graphics.UserInterface.Interaction;
+using fluXis.Screens.Edit.Input;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
+using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
 using osuTK;
 
 namespace fluXis.Screens.Edit.Tabs.Setup.Entries;
 
-public partial class SetupKeymode : CompositeDrawable
+public partial class SetupKeymode : CompositeDrawable, IKeyBindingHandler<EditorKeybinding>
 {
     private int[] counts { get; } = { 4, 5, 6, 7, 8 };
+    private int[] extraCounts { get; } = { 1, 2, 3, 9, 10 };
+
+    private FillFlowContainer keyCountButtonsContainer;
 
     [BackgroundDependencyLoader]
     private void load()
@@ -32,13 +38,36 @@ public partial class SetupKeymode : CompositeDrawable
                 RelativeSizeAxes = Axes.Both,
                 Colour = Theme.Background3
             },
-            new FillFlowContainer
+            keyCountButtonsContainer = new FillFlowContainer
             {
                 RelativeSizeAxes = Axes.Both,
                 Direction = FillDirection.Horizontal,
-                ChildrenEnumerable = counts.Select(count => new Entry(count) { Width = 1f / counts.Length })
+                ChildrenEnumerable = getEntries(false)
             }
         };
+    }
+
+    public bool OnPressed(KeyBindingPressEvent<EditorKeybinding> e)
+    {
+        if (e.Action != EditorKeybinding.ShowAltKeyCounts) return false;
+
+        keyCountButtonsContainer.Clear();
+        keyCountButtonsContainer.ChildrenEnumerable = getEntries(true);
+
+        return true;
+    }
+
+    public void OnReleased(KeyBindingReleaseEvent<EditorKeybinding> e)
+    {
+        if (e.Action != EditorKeybinding.ShowAltKeyCounts) return;
+
+        keyCountButtonsContainer.Clear();
+        keyCountButtonsContainer.ChildrenEnumerable = getEntries(false);
+    }
+
+    private IEnumerable<Entry> getEntries(bool extra)
+    {
+        return (extra ? extraCounts : counts).Select(count => new Entry(count) { Width = 1f / counts.Length });
     }
 
     private partial class Entry : BufferedContainer
