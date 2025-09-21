@@ -46,7 +46,8 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
         new SelectTool(),
         new SingleNoteTool(),
         new LongNoteTool(),
-        new TickNoteTool()
+        new TickNoteTool(),
+        new LandmineTool()
     };
 
     public IReadOnlyList<EffectTool> EffectTools { get; } = new EffectTool[]
@@ -141,7 +142,7 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
             new()
             {
                 Title = "Tools",
-                ExtraTitle = "(1-4)",
+                ExtraTitle = "(1-5)",
                 Icon = FontAwesome6.Solid.Pen,
                 Tools = Tools
             },
