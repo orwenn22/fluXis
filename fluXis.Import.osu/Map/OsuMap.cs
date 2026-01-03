@@ -93,12 +93,59 @@ public class OsuMap
             HealthDifficulty = HealthDrainRate
         };
 
-        foreach (var timingPoint in TimingPoints)
+        float dominantBpm = getDominantBPM();
+        float currentBpm = dominantBpm;
+
+        for (int i = 0; i < TimingPoints.Count; ++i)
         {
-            if (timingPoint.IsScrollVelocity)
-                mapInfo.ScrollVelocities.Add(timingPoint.ToScrollVelocityInfo());
+            OsuTimingPoint currentPoint = TimingPoints[i];
+
+            //check if we have both a bpm point and effect point at the same time
+            if (i != TimingPoints.Count - 1 && TimingPoints[i + 1].IsScrollVelocity != currentPoint.IsScrollVelocity && TimingPoints[i + 1].Time == currentPoint.Time)
+            {
+                OsuTimingPoint secondaryPoint = TimingPoints[i + 1];
+
+                //identify which point is sv and which point is bpm
+                OsuTimingPoint svPoint;
+                OsuTimingPoint bpmPoint;
+
+                if (currentPoint.IsScrollVelocity)
+                {
+                    svPoint = currentPoint;
+                    bpmPoint = secondaryPoint;
+                }
+                else
+                {
+                    svPoint = secondaryPoint;
+                    bpmPoint = currentPoint;
+                }
+
+                mapInfo.TimingPoints.Add(bpmPoint.ToTimingPointInfo());
+                currentBpm = bpmPoint.BPM;
+                mapInfo.ScrollVelocities.Add(svPoint.ToScrollVelocityInfo(dominantBpm, currentBpm));
+
+                i++; //skip next point because we already handled it
+            }
+            //only one point at the current time
             else
-                mapInfo.TimingPoints.Add(timingPoint.ToTimingPointInfo());
+            {
+                if (currentPoint.IsScrollVelocity)
+                {
+                    mapInfo.ScrollVelocities.Add(currentPoint.ToScrollVelocityInfo(dominantBpm, currentBpm));
+                }
+                else
+                {
+                    mapInfo.TimingPoints.Add(currentPoint.ToTimingPointInfo());
+                    currentBpm = currentPoint.BPM;
+                    //in osu mania, a bpm point alone will change the scroll speed
+                    //(this matches osu!stable)
+                    mapInfo.ScrollVelocities.Add(new ScrollVelocity
+                    {
+                        Time = currentPoint.Time,
+                        Multiplier = currentBpm / dominantBpm
+                    });
+                }
+            }
         }
 
         mapInfo.HitObjects.AddRange(HitObjects.Select(h => h.ToHitObjectInfo(this)));
@@ -120,5 +167,53 @@ public class OsuMap
         }
 
         return mapInfo;
+    }
+
+    private float getDuration()
+    {
+        float duration = 0;
+
+        foreach (var osuHitObject in HitObjects)
+        {
+            float objectEnd = float.IsNaN(osuHitObject.StartTime) ? osuHitObject.EndTime : //p note (this should fall in the "long note" category, but do it just in case)
+                osuHitObject.Type == OsuHitObjectType.Hold ? osuHitObject.EndTime : //long note
+                osuHitObject.StartTime; //simple note
+
+            if (objectEnd > duration) duration = objectEnd;
+        }
+
+        return duration;
+    }
+
+    private float getDominantBPM()
+    {
+        float mapDuration = getDuration();
+
+        Dictionary<float, float> bpmDurations = new();
+        var bpmPoints = TimingPoints.FindAll(p => !p.IsScrollVelocity);
+
+        for (int i = 0; i < bpmPoints.Count; ++i)
+        {
+            OsuTimingPoint bpmPoint = bpmPoints[i];
+            float bpm = bpmPoint.BPM;
+            float duration = (i == bpmPoints.Count - 1 || bpmPoints[i + 1].Time > mapDuration) ? mapDuration - bpmPoint.Time : bpmPoints[i + 1].Time - bpmPoint.Time;
+
+            if (!bpmDurations.ContainsKey(bpm)) bpmDurations[bpm] = duration;
+            else bpmDurations[bpm] += duration;
+        }
+
+        float dominantBPM = 1;
+        float highestDuration = 0;
+
+        foreach (var bpmDuration in bpmDurations)
+        {
+            if (bpmDuration.Value > highestDuration)
+            {
+                dominantBPM = bpmDuration.Key;
+                highestDuration = bpmDuration.Value;
+            }
+        }
+
+        return dominantBPM;
     }
 }

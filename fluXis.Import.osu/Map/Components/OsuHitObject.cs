@@ -17,6 +17,19 @@ public class OsuHitObject
 
     public HitObject ToHitObjectInfo(OsuMap map)
     {
+        if (float.IsNaN(StartTime))
+        {
+            return new HitObject()
+            {
+                Type = 2,
+                Time = EndTime,
+                Lane = (int)Math.Floor(Position.X * map.CircleSize / 512) + 1,
+                HoldTime = 0,
+                HitSound = CustomHitSound,
+                Ghost = true
+            };
+        }
+
         var holdTime = 0f;
 
         if (EndTime > 0)

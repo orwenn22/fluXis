@@ -44,6 +44,10 @@ public class HitObject : ITimedObject
     [JsonProperty("type")]
     public int Type { get; set; }
 
+    //if this is set to true, the note visually exists but doesn't do anything (ONLY WORKS ON LANDMINES FOR NOW)
+    [JsonProperty("ghost")]
+    public bool Ghost { get; set; }
+
     [JsonIgnore]
     public bool LongNote => HoldTime > 0 && Type == 0;
 

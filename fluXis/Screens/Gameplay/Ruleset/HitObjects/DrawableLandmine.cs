@@ -65,6 +65,8 @@ public partial class DrawableLandmine : DrawableHitObject
 
     protected override void CheckJudgement(bool byUser, double offset)
     {
+        if (Data.Ghost) return;
+
         if (!byUser)
         {
             if (isBeingHeld)
