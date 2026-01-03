@@ -137,8 +137,8 @@ public class OsuMap
                 {
                     mapInfo.TimingPoints.Add(currentPoint.ToTimingPointInfo());
                     currentBpm = currentPoint.BPM;
-                    //in osu mania, a bpm point alone will change the scroll speed
-                    //(this matches osu!stable)
+                    //in osu mania, a bpm timing point alone (i.e. no simultaneous sv/effect point) will change the scroll speed
+                    //(this matches osu!stable, osu!lazer behaves a bit differently, but most maps expect stable's behavior)
                     mapInfo.ScrollVelocities.Add(new ScrollVelocity
                     {
                         Time = currentPoint.Time,
