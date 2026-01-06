@@ -137,12 +137,20 @@ public class OsuMap
                 {
                     mapInfo.TimingPoints.Add(currentPoint.ToTimingPointInfo());
                     currentBpm = currentPoint.BPM;
+
                     //in osu mania, a bpm timing point alone (i.e. no simultaneous sv/effect point) will change the scroll speed
                     //(this matches osu!stable, osu!lazer behaves a bit differently, but most maps expect stable's behavior)
+                    double multiplier = currentBpm / dominantBpm;
+
+                    //some gimmick maps might add A LOT of timing points really close to each others to add lots of barlines.
+                    //in cases these timing points have the same bpm, we don't want to add the same scroll velocities lots of times
+                    //(right now this is commented because this makes the barlines look different on some maps and i don't know why)
+                    //if (mapInfo.ScrollVelocities.Count >= 1 && mapInfo.ScrollVelocities.Last().Multiplier == multiplier) continue;
+
                     mapInfo.ScrollVelocities.Add(new ScrollVelocity
                     {
                         Time = currentPoint.Time,
-                        Multiplier = currentBpm / dominantBpm
+                        Multiplier = multiplier
                     });
                 }
             }
