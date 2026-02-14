@@ -328,6 +328,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     new MenuActionItem("Submit to Queue...", FontAwesome6.Solid.Upload, submitToQueue) { IsEnabled = () => editorMap.MapSet.OnlineID > 0 && api.IsLoggedIn },
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Open Song Folder", FontAwesome6.Solid.FolderOpen, openFolder),
+                                    // new MenuActionItem("Export notes as .lrc", FontAwesome6.Solid.LineColumns, exportNotes),
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Exit", FontAwesome6.Solid.DoorOpen, MenuItemType.Dangerous, tryExit)
                                 }),
@@ -566,6 +567,19 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     }
 
     private void openFolder() => MapFiles.PresentExternally(editorMap.RealmMap);
+
+    private void exportNotes()
+    {
+        var sb = new StringBuilder();
+
+        foreach (var noteEvent in editorMap.MapEvents.NoteEvents)
+        {
+            sb.AppendLine($"[{TimeUtils.Format(noteEvent.Time)}] {noteEvent.Content}");
+        }
+
+        var path = MapFiles.GetFullPath(editorMap.MapSet.GetPathForFile("lyrics.lrc"));
+        File.WriteAllText(path, sb.ToString());
+    }
 
     protected override bool OnKeyDown(KeyDownEvent e)
     {

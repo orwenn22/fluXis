@@ -81,6 +81,7 @@ public class FontAwesome6
         public static IconUsage Keyboard => GetSolid(0xf11c);
         public static IconUsage LayerGroup => GetSolid(0xf5fd);
         public static IconUsage LeftRight => GetSolid(0xf337);
+        public static IconUsage LineColumns => GetSolid(0xf870);
         public static IconUsage Link => GetSolid(0xf0c1);
         public static IconUsage ListMusic => GetSolid(0xf8c9);
         public static IconUsage Lock => GetSolid(0xf023);
