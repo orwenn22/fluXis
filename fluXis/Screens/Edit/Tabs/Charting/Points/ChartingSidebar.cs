@@ -66,6 +66,8 @@ public partial class ChartingSidebar : PointsSidebar
                             inspector.AddSection("End Time", TimeUtils.Format(hit.EndTime));
                             break;
                     }
+
+                    inspector.AddSection("Group", $"{hit.Group}");
                 }
 
                 break;

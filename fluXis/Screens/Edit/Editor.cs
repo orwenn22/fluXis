@@ -348,6 +348,10 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                         { IsEnabled = () => ChartingContainer?.CanFlipSelection ?? false },
                                     new MenuActionItem("Shuffle Selection", FontAwesome6.Solid.Shuffle, () => ChartingContainer?.ShuffleSelection())
                                         { IsEnabled = () => ChartingContainer?.CanShuffleSelection ?? false },
+                                    new MenuActionItem("Set selection group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorAddNotesToGroupPanel
+                                    {
+                                        OnSetGroup = (s => ChartingContainer?.SetSelectionGroup(s))
+                                    }),
                                     new MenuActionItem("Re-snap all notes", FontAwesome6.Solid.ArrowsRotate, () => ChartingContainer?.ReSnapAll()),
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Select all", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.BlueprintContainer.SelectAll()),

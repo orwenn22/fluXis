@@ -48,6 +48,7 @@ public partial class ScrollVelocityEntry : PointListEntry
                 Map.Update(sv);
             }
         },
-        new EditorVariableLaneMask(Map, sv)
+        new EditorVariableLaneMask(Map, sv),
+        new EditorGroupInfo(Map, sv)
     });
 }

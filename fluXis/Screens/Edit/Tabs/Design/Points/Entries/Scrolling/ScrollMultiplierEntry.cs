@@ -49,6 +49,7 @@ public partial class ScrollMultiplierEntry : PointListEntry
             }
         },
         new EditorVariableEasing<ScrollMultiplierEvent>(Map, scroll),
-        new EditorVariableLaneMask(Map, scroll)
+        new EditorVariableLaneMask(Map, scroll),
+        new EditorGroupInfo(Map, scroll)
     });
 }
