@@ -31,6 +31,7 @@ public partial class ShaderTransformHandler : CompositeComponent, IHasStrength
     public ShaderTransformHandler(IHasStrength shader)
     {
         this.shader = shader;
+        Name = (shader as ShaderStep)?.Type.ToString() ?? "";
     }
 
     [BackgroundDependencyLoader]

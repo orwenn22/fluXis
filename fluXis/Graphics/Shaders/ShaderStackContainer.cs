@@ -107,9 +107,6 @@ public partial class ShaderStackContainer : CompositeDrawable, IBufferedDrawable
         return children;
     }
 
-    public T GetShader<T>() where T : ShaderContainer
-        => shaders.FirstOrDefault(s => s.GetType() == typeof(T)) as T;
-
     public ShaderStep GetShader(ShaderType type)
         => shaders.FirstOrDefault(s => s.Type == type);
 
