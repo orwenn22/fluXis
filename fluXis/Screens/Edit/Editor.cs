@@ -587,7 +587,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
 
     private void importNotes()
     {
-        var timeTagRegex = new Regex(@"\[(\d{2}):(\d{2})\.(\d{2})\]", RegexOptions.Compiled);
+        var timeTagRegex = new Regex(@"\[(\d{2}):(\d{2})\.(\d{2,3})\]", RegexOptions.Compiled);
 
         panels.Content = new FileSelect
         {
@@ -611,7 +611,10 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                     {
                         var minutes = int.Parse(match.Groups[1].Value);
                         var seconds = int.Parse(match.Groups[2].Value);
-                        var hundredths = int.Parse(match.Groups[3].Value);
+
+                        var hundredGroup = match.Groups[3].Value;
+                        var hundredths = int.Parse(hundredGroup);
+                        hundredths *= hundredGroup.Length == 3 ? 1 : 10;
 
                         var ms = hundredths + seconds * 1000 + minutes * 1000 * 60;
                         editorMap.Add(new NoteEvent { Time = ms, Content = text });
