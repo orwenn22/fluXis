@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using fluXis.Audio;
 using fluXis.Configuration;
@@ -17,6 +18,7 @@ using fluXis.Graphics.UserInterface.Buttons;
 using fluXis.Graphics.UserInterface.Buttons.Presets;
 using fluXis.Graphics.UserInterface.Color;
 using fluXis.Graphics.UserInterface.Context;
+using fluXis.Graphics.UserInterface.Files;
 using fluXis.Graphics.UserInterface.Menus;
 using fluXis.Graphics.UserInterface.Menus.Items;
 using fluXis.Graphics.UserInterface.Panel;
@@ -25,6 +27,7 @@ using fluXis.Graphics.UserInterface.Panel.Types;
 using fluXis.Input;
 using fluXis.Localization;
 using fluXis.Map;
+using fluXis.Map.Structures.Events;
 using fluXis.Online.Activity;
 using fluXis.Online.API;
 using fluXis.Online.API.Requests.Maps;
@@ -77,6 +80,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     public override bool AllowMusicControl => false;
     public override bool ApplyValuesAfterLoad => true;
     public override float ParallaxStrength => 0f;
+    public override bool ShowCursor => false;
 
     [Resolved]
     private NotificationManager notifications { get; set; }
@@ -327,9 +331,11 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     new MenuActionItem("Submit to Queue...", FontAwesome6.Solid.Upload, submitToQueue) { IsEnabled = () => editorMap.MapSet.OnlineID > 0 && api.IsLoggedIn },
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Open Song Folder", FontAwesome6.Solid.FolderOpen, openFolder),
+                                    experiments.Get<bool>(ExperimentConfig.LrcFeatures) ? new MenuActionItem("Export notes as .lrc", FontAwesome6.Solid.LineColumns, exportNotes) : null,
+                                    experiments.Get<bool>(ExperimentConfig.LrcFeatures) ? new MenuActionItem("Import .lrc as notes", FontAwesome6.Solid.LineColumns, importNotes) : null,
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Exit", FontAwesome6.Solid.DoorOpen, MenuItemType.Dangerous, tryExit)
-                                }),
+                                }.Where(x => x != null)),
                                 new MenuExpandItem("Edit", FontAwesome6.Solid.Pen, new FluXisMenuItem[]
                                 {
                                     new MenuActionItem("Undo", FontAwesome6.Solid.RotateLeft, actionStack.Undo) { IsEnabled = () => actionStack.CanUndo },
@@ -519,6 +525,20 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     private void updateDim(ValueChangedEvent<float> e) => backgrounds.SetDim(e.NewValue);
     private void updateBlur(ValueChangedEvent<float> e) => backgrounds.SetBlur(e.NewValue);
 
+    public void ChangeToTab<T>([CanBeNull] Action<T> act = null) where T : EditorTab =>
+        ChangeToTab(typeof(T), x => act?.Invoke(x as T));
+
+    public void ChangeToTab(Type tab, [CanBeNull] Action<EditorTab> act = null)
+    {
+        var target = tabs.FirstOrDefault(x => x.GetType() == tab) ?? throw new InvalidOperationException("Tab not in editor.");
+        changeTab(tabs.IndexOf(target));
+
+        if (target.HasLoading)
+            target.ScheduleAfterLoad(() => act?.Invoke(target));
+        else
+            act?.Invoke(target);
+    }
+
     private void changeTab(int to)
     {
         currentTab = to;
@@ -551,6 +571,58 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     }
 
     private void openFolder() => MapFiles.PresentExternally(editorMap.RealmMap);
+
+    private void exportNotes()
+    {
+        var sb = new StringBuilder();
+
+        foreach (var noteEvent in editorMap.MapEvents.NoteEvents)
+        {
+            sb.AppendLine($"[{TimeUtils.Format(noteEvent.Time)}] {noteEvent.Content}");
+        }
+
+        var path = MapFiles.GetFullPath(editorMap.MapSet.GetPathForFile("lyrics.lrc"));
+        File.WriteAllText(path, sb.ToString());
+    }
+
+    private void importNotes()
+    {
+        var timeTagRegex = new Regex(@"\[(\d{2}):(\d{2})\.(\d{2,3})\]", RegexOptions.Compiled);
+
+        panels.Content = new FileSelect
+        {
+            AllowedExtensions = [".lrc"],
+            OnFileSelected = f =>
+            {
+                var lines = File.ReadAllLines(f.FullName);
+
+                editorMap.MapEvents.NoteEvents.ToList().ForEach(x => editorMap.Remove(x));
+
+                foreach (var line in lines)
+                {
+                    var matches = timeTagRegex.Matches(line);
+
+                    if (matches.Count == 0)
+                        continue;
+
+                    var text = timeTagRegex.Replace(line, "").Trim();
+
+                    foreach (Match match in matches)
+                    {
+                        var minutes = int.Parse(match.Groups[1].Value);
+                        var seconds = int.Parse(match.Groups[2].Value);
+
+                        var hundredGroup = match.Groups[3].Value;
+                        var hundredths = int.Parse(hundredGroup);
+                        hundredths *= hundredGroup.Length == 3 ? 1 : 10;
+
+                        var ms = hundredths + seconds * 1000 + minutes * 1000 * 60;
+                        editorMap.Add(new NoteEvent { Time = ms, Content = text });
+                    }
+                }
+            }
+        };
+    }
 
     protected override bool OnKeyDown(KeyDownEvent e)
     {
@@ -657,6 +729,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
         clock.Track.Value.VolumeTo(0, EditorLoader.DURATION);
         globalClock.Seek((float)clock.CurrentTime);
         panels.Content?.Hide();
+        setSystemCursorVisibility(false);
         return base.OnExiting(e);
     }
 
@@ -669,8 +742,16 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     public override void OnResuming(ScreenTransitionEvent e) => enterAnimation();
     public override void OnSuspending(ScreenTransitionEvent e) => exitAnimation();
 
+    private void setSystemCursorVisibility(bool visible)
+    {
+        if (Game is null) return;
+
+        Game.Window.CursorState = visible ? CursorState.Default : CursorState.Hidden;
+    }
+
     private void exitAnimation()
     {
+        setSystemCursorVisibility(false);
         lowPass.CutoffTo(AudioFilter.MAX, Styling.TRANSITION_MOVE);
         highPass.CutoffTo(0, Styling.TRANSITION_MOVE);
         this.ScaleTo(1.2f, Styling.TRANSITION_MOVE, Easing.OutQuint).FadeOut(Styling.TRANSITION_FADE);
@@ -678,6 +759,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
 
     private void enterAnimation()
     {
+        setSystemCursorVisibility(true);
+
         using (BeginDelayedSequence(Styling.TRANSITION_ENTER_DELAY))
         {
             this.ScaleTo(1f).FadeInFromZero(Styling.TRANSITION_FADE);

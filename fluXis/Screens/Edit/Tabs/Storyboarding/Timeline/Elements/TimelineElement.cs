@@ -31,7 +31,6 @@ public partial class TimelineElement : CompositeDrawable
 
     private FluXisSpriteIcon icon;
     private TruncatingText text;
-    private DragHandle handle;
 
     public TimelineElement(StoryboardElement element)
     {
@@ -97,11 +96,7 @@ public partial class TimelineElement : CompositeDrawable
                             WebFontSize = 12,
                             Colour = textColor
                         },
-                        handle = new DragHandle
-                        {
-                            Alpha = 0,
-                            Colour = textColor
-                        }
+                        new DragHandle { Colour = textColor }
                     }
                 }
             },
@@ -154,12 +149,11 @@ public partial class TimelineElement : CompositeDrawable
 
     public static Colour4 GetColor(StoryboardElementType type) => type switch
     {
-        StoryboardElementType.Box => Theme.Red,
+        StoryboardElementType.Box or StoryboardElementType.OutlineBox => Theme.Red,
         StoryboardElementType.Sprite => Theme.Orange,
         StoryboardElementType.Text => Theme.Yellow,
         StoryboardElementType.Script => Theme.Lime,
-        StoryboardElementType.Circle => Theme.Green,
-        StoryboardElementType.OutlineCircle => Theme.Green,
+        StoryboardElementType.Circle or StoryboardElementType.OutlineCircle => Theme.Green,
         StoryboardElementType.SkinSprite => Theme.Aqua,
         _ => Theme.Highlight
     };
@@ -179,17 +173,6 @@ public partial class TimelineElement : CompositeDrawable
             UpdateText();
 
         icon.Margin = new MarginPadding { Left = -Math.Min(X - 12, -9), Right = 9 };
-    }
-
-    protected override bool OnHover(HoverEvent e)
-    {
-        handle.FadeIn(200);
-        return true;
-    }
-
-    protected override void OnHoverLost(HoverLostEvent e)
-    {
-        handle.FadeOut(200);
     }
 
     /// <summary>
@@ -223,7 +206,7 @@ public partial class TimelineElement : CompositeDrawable
 
         protected override void OnHoverLost(HoverLostEvent e)
         {
-            handle.FadeTo(.6f, 600).ResizeWidthTo(4, 400, Easing.OutQuint);
+            handle.FadeTo(0f, 600).ResizeWidthTo(4, 400, Easing.OutQuint);
             base.OnHoverLost(e);
         }
     }

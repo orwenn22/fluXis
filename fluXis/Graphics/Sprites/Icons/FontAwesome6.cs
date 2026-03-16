@@ -81,6 +81,7 @@ public class FontAwesome6
         public static IconUsage Keyboard => GetSolid(0xf11c);
         public static IconUsage LayerGroup => GetSolid(0xf5fd);
         public static IconUsage LeftRight => GetSolid(0xf337);
+        public static IconUsage LineColumns => GetSolid(0xf870);
         public static IconUsage Link => GetSolid(0xf0c1);
         public static IconUsage ListMusic => GetSolid(0xf8c9);
         public static IconUsage Lock => GetSolid(0xf023);
@@ -91,6 +92,7 @@ public class FontAwesome6
         public static IconUsage Minus => GetSolid(0xf068);
         public static IconUsage Music => GetSolid(0xf001);
         public static IconUsage Newspaper => GetSolid(0xf1ea);
+        public static IconUsage NoteSticky => GetSolid(0xf249);
         public static IconUsage ObjectGroup => GetSolid(0xf247);
         public static IconUsage PaintBrush => GetSolid(0xf1fc);
         public static IconUsage Palette => GetSolid(0xf53f);
