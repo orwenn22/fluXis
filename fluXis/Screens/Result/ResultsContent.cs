@@ -48,7 +48,6 @@ public partial class ResultsContent : CompositeDrawable
 
         InternalChildren =
         [
-            // TODO: fix rank update
             rank = new Container
             {
                 RelativePositionAxes = Axes.X,
