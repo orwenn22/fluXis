@@ -231,7 +231,7 @@ public class FluXisImport : MapImporter
                     HealthDifficulty = mapInfo.HealthDifficulty,
                     MapSet = mapSet,
                     Hash = hash,
-                    KeyCount = keys,
+                    KeyCount = keys / (mapInfo.IsSplit ? 2 : 1),
                     StatusInt = MapStatus,
                     FileName = filename
                 };
