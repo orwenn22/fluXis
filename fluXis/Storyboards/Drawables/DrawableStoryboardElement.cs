@@ -31,8 +31,7 @@ public partial class DrawableStoryboardElement : CompositeDrawable
         Colour = Colour4.FromRGBA(Element.Color);
         AlwaysPresent = true;
 
-        Blending = Element.Blending ?
-            BlendingParameters.GetDefaultParameters(Element.BlendingMode) : BlendingParameters.Mixture;
+        Blending = Element.Blending ? BlendingParameters.GetDefaultParameters(Element.BlendingMode) : BlendingParameters.Mixture;
 
         var anims = Element.Animations.OrderBy(x => x.StartTime).ToList();
 

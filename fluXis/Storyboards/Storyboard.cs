@@ -16,6 +16,9 @@ public class Storyboard : EditorMap.IChangeNotifier
     [JsonProperty("elements")]
     public List<StoryboardElement> Elements { get; set; } = new();
 
+    [JsonProperty("compounds")]
+    public Dictionary<string, List<StoryboardElement>> Compounds { get; set; } = new();
+
     [JsonIgnore]
     public bool Empty => Elements.Count == 0;
 
