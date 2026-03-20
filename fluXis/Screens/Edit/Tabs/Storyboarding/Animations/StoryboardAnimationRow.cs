@@ -93,7 +93,7 @@ public partial class StoryboardAnimationRow : GridContainer
     {
         var animation = new StoryboardAnimation
         {
-            StartTime = clock.CurrentTime,
+            StartTime = clock.CurrentTime - Item.StartTime,
             ValueStart = getDefault(type),
             ValueEnd = getDefault(type),
             Type = type
