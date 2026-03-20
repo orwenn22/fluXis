@@ -37,7 +37,7 @@ public partial class DrawableStoryboardElement : CompositeDrawable
 
         foreach (var animation in anims)
         {
-            using (BeginAbsoluteSequence(animation.StartTime))
+            using (BeginAbsoluteSequence(Element.StartTime + animation.StartTime))
             {
                 var duration = Math.Max(animation.Duration, 0);
 

@@ -63,7 +63,6 @@ public partial class DrawableStoryboardCompound : DrawableStoryboardElement
             var element = el.JsonCopy();
             element.StartTime += Element.StartTime;
             element.EndTime += Element.StartTime;
-            element.Animations.ForEach(x => x.StartTime += Element.StartTime);
 
             var drawable = element.Type switch
             {

@@ -20,7 +20,7 @@ public partial class StoryboardAnimationRow : GridContainer
     [Resolved]
     private EditorMap map { get; set; }
 
-    private readonly StoryboardElement item;
+    public readonly StoryboardElement Item;
     private readonly StoryboardAnimationType type;
     private readonly Colour4 color;
 
@@ -28,7 +28,7 @@ public partial class StoryboardAnimationRow : GridContainer
 
     public StoryboardAnimationRow(StoryboardElement item, StoryboardAnimationType type)
     {
-        this.item = item;
+        this.Item = item;
         this.type = type;
         color = getColor(type);
     }
@@ -83,7 +83,7 @@ public partial class StoryboardAnimationRow : GridContainer
                 {
                     RelativeSizeAxes = Axes.Both,
                     Masking = true,
-                    ChildrenEnumerable = item.Animations.Where(x => x.Type == type).Select(createEntry)
+                    ChildrenEnumerable = Item.Animations.Where(x => x.Type == type).Select(createEntry)
                 }
             }
         };
@@ -99,7 +99,7 @@ public partial class StoryboardAnimationRow : GridContainer
             Type = type
         };
 
-        item.Animations.Add(animation);
+        Item.Animations.Add(animation);
         entries.Add(createEntry(animation));
         map.Add(animation);
     }
@@ -109,7 +109,7 @@ public partial class StoryboardAnimationRow : GridContainer
         var entry = entries.FirstOrDefault(x => x.Animation == animation);
         if (entry != null) entries.Remove(entry, true);
 
-        item.Animations.Remove(animation);
+        Item.Animations.Remove(animation);
         map.Remove(animation);
     }
 
