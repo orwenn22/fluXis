@@ -138,7 +138,7 @@ public partial class StoryboardAnimationEntry : CompositeDrawable, IHasPopover
             Children = new Drawable[]
             {
                 new EditorVariableTitle(Animation.Type.GetDescription(), () => RequestRemove?.Invoke(Animation), false),
-                new EditorVariableTime(map, Animation),
+                new EditorVariableTime(map, Animation, () => row.Item.StartTime),
                 new EditorVariableLength<StoryboardAnimation>(map, Animation, beatLength),
                 new EditorVariableTextBox
                 {
