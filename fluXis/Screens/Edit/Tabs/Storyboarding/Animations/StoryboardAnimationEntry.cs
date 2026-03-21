@@ -129,6 +129,7 @@ public partial class StoryboardAnimationEntry : CompositeDrawable, IHasPopover
     public Popover GetPopover() => new FluXisPopover
     {
         OnClose = () => isSelected.Value = false,
+        AllowableAnchors = [Anchor.BottomCentre],
         Child = new FillFlowContainer
         {
             Width = 380,
