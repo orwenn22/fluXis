@@ -24,6 +24,7 @@ public partial class EditorVariableTime : EditorVariableNumber<double>
 
         Text = "Time";
         TooltipText = "The time in milliseconds when the event should trigger.";
+        Formatting = "0.0000";
         CurrentValue = obj.Time;
         FetchStepValue = () => snaps?.CurrentStep ?? 1;
         OnValueChanged = v =>
