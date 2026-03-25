@@ -39,5 +39,8 @@ public enum EditorKeybinding
     PreviousNote,
 
     [Description("Seek to next note/bookmark")]
-    NextNote
+    NextNote,
+
+    [Description("Show alternative key counts")]
+    ShowAltKeyCounts,
 }
