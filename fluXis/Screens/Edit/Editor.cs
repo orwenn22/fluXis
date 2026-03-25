@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using fluXis.Audio;
 using fluXis.Configuration;
@@ -17,6 +18,7 @@ using fluXis.Graphics.UserInterface.Buttons;
 using fluXis.Graphics.UserInterface.Buttons.Presets;
 using fluXis.Graphics.UserInterface.Color;
 using fluXis.Graphics.UserInterface.Context;
+using fluXis.Graphics.UserInterface.Files;
 using fluXis.Graphics.UserInterface.Menus;
 using fluXis.Graphics.UserInterface.Menus.Items;
 using fluXis.Graphics.UserInterface.Panel;
@@ -25,6 +27,7 @@ using fluXis.Graphics.UserInterface.Panel.Types;
 using fluXis.Input;
 using fluXis.Localization;
 using fluXis.Map;
+using fluXis.Map.Structures.Events;
 using fluXis.Online.Activity;
 using fluXis.Online.API;
 using fluXis.Online.API.Requests.Maps;
@@ -328,10 +331,11 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     new MenuActionItem("Submit to Queue...", FontAwesome6.Solid.Upload, submitToQueue) { IsEnabled = () => editorMap.MapSet.OnlineID > 0 && api.IsLoggedIn },
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Open Song Folder", FontAwesome6.Solid.FolderOpen, openFolder),
-                                    // new MenuActionItem("Export notes as .lrc", FontAwesome6.Solid.LineColumns, exportNotes),
+                                    experiments.Get<bool>(ExperimentConfig.LrcFeatures) ? new MenuActionItem("Export notes as .lrc", FontAwesome6.Solid.LineColumns, exportNotes) : null,
+                                    experiments.Get<bool>(ExperimentConfig.LrcFeatures) ? new MenuActionItem("Import .lrc as notes", FontAwesome6.Solid.LineColumns, importNotes) : null,
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Exit", FontAwesome6.Solid.DoorOpen, MenuItemType.Dangerous, tryExit)
-                                }),
+                                }.Where(x => x != null)),
                                 new MenuExpandItem("Edit", FontAwesome6.Solid.Pen, new FluXisMenuItem[]
                                 {
                                     new MenuActionItem("Undo", FontAwesome6.Solid.RotateLeft, actionStack.Undo) { IsEnabled = () => actionStack.CanUndo },
@@ -583,6 +587,45 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
 
         var path = MapFiles.GetFullPath(editorMap.MapSet.GetPathForFile("lyrics.lrc"));
         File.WriteAllText(path, sb.ToString());
+    }
+
+    private void importNotes()
+    {
+        var timeTagRegex = new Regex(@"\[(\d{2}):(\d{2})\.(\d{2,3})\]", RegexOptions.Compiled);
+
+        panels.Content = new FileSelect
+        {
+            AllowedExtensions = [".lrc"],
+            OnFileSelected = f =>
+            {
+                var lines = File.ReadAllLines(f.FullName);
+
+                editorMap.MapEvents.NoteEvents.ToList().ForEach(x => editorMap.Remove(x));
+
+                foreach (var line in lines)
+                {
+                    var matches = timeTagRegex.Matches(line);
+
+                    if (matches.Count == 0)
+                        continue;
+
+                    var text = timeTagRegex.Replace(line, "").Trim();
+
+                    foreach (Match match in matches)
+                    {
+                        var minutes = int.Parse(match.Groups[1].Value);
+                        var seconds = int.Parse(match.Groups[2].Value);
+
+                        var hundredGroup = match.Groups[3].Value;
+                        var hundredths = int.Parse(hundredGroup);
+                        hundredths *= hundredGroup.Length == 3 ? 1 : 10;
+
+                        var ms = hundredths + seconds * 1000 + minutes * 1000 * 60;
+                        editorMap.Add(new NoteEvent { Time = ms, Content = text });
+                    }
+                }
+            }
+        };
     }
 
     protected override bool OnKeyDown(KeyDownEvent e)
