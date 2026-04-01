@@ -104,10 +104,16 @@ public class MapInfo
     public string Hash { get; set; }
 
     [JsonIgnore]
+    public string AudioHash { get; set; }
+
+    [JsonIgnore]
     public string EffectHash { get; private set; }
 
     [JsonIgnore]
     public string StoryboardHash { get; private set; }
+
+    [JsonProperty("visualization-enabled")]
+    public bool EnableVisualization { get; set; }
 
     #region Server-Side Stuff
 

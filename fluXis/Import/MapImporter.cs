@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Hashing;
 using System.Security.Cryptography;
 using fluXis.Database;
 using fluXis.Database.Maps;
@@ -9,6 +10,7 @@ using fluXis.Map;
 using fluXis.Overlay.Notifications;
 using fluXis.Overlay.Notifications.Tasks;
 using fluXis.Utils;
+using fluXis.Utils.Extensions;
 using osu.Framework.Platform;
 
 namespace fluXis.Import;
@@ -154,6 +156,24 @@ public class MapImporter
     {
         var sha256 = SHA256.Create();
         var hashBytes = sha256.ComputeHash(entry.Open());
+        var hashString = BitConverter.ToString(hashBytes);
+
+        return hashString.Replace("-", "").ToLower();
+    }
+
+    /// <summary>
+    /// Gets the XXHash of the given file. This is only used for assets such as audio files only, does <b>NOT</b> apply to chart, effect and storyboard files.
+    /// </summary>
+    /// <param name="entry">
+    /// The file to hash.
+    /// </param>
+    /// <returns>
+    /// The XXHash hash of the file.
+    /// </returns>
+    protected static string GetXXHash(ZipArchiveEntry entry)
+    {
+        var sha256 = SHA256.Create();
+        var hashBytes = XxHash3.Hash(entry.ReadAllBytes());
         var hashString = BitConverter.ToString(hashBytes);
 
         return hashString.Replace("-", "").ToLower();

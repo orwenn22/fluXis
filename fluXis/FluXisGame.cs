@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using fluXis.Audio;
+using fluXis.Audio.FFT;
 using fluXis.Audio.Transforms;
 using fluXis.Configuration;
+using fluXis.Database;
 using fluXis.Database.Maps;
 using fluXis.Graphics.Background;
 using fluXis.Graphics.Sprites.Icons;
@@ -72,11 +75,14 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
     public static readonly string[] PROFILE_ASSET_EXTENSIONS = { ".jpg", ".jpeg", ".png" };
     public static readonly string[] SUPPORTER_PROFILE_ASSET_EXTENSIONS = { ".jpg", ".jpeg", ".png", ".gif" };
 
+    public static readonly string FFT_CACHE_PATH = "cache/fft";
+
     protected override bool LoadComponentsLazy => true;
     public override bool PrioritizeGlobalKeybindings => screenStack.CurrentScreen is not Editor || overlayContainer.Any(x => x.State.Value == Visibility.Visible);
 
     private BufferedContainer buffer;
     private GlobalClock globalClock;
+    private AudioAnalyzer audioAnalyzer;
     private GlobalBackground globalBackground;
     private Container screenContainer;
     private FluXisScreenStack screenStack;
@@ -162,6 +168,11 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
         loadComponent(exitAnimation = new ExitAnimation(), Add);
 
         loadComponent(MenuScreen = new MenuScreen());
+
+        loadComponent(audioAnalyzer = new AudioAnalyzer());
+        GameDependencies.CacheAs(audioAnalyzer);
+
+        MapStore.MapBindable.BindValueChanged(onMapChanged);
 
         LoadQueue.Push(new LoadTask("Downloading server config...", c => APIClient.PullServerConfig(c, _ =>
         {
@@ -257,6 +268,23 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
             Schedule(() => WaitForReady(action));
         else
             action();
+    }
+
+    private void onMapChanged(ValueChangedEvent<RealmMap> m)
+    {
+        var map = m.NewValue;
+
+        if (map is null) return;
+        if (!map.EnableVisualization) return;
+
+        Stream stream = File.OpenRead(MapFiles.GetFullPath(map.FullAudioPath));
+
+        audioAnalyzer.ChangeAudio(
+            stream,
+            map.MapSet.ID,
+            map.Metadata.Audio,
+            map.AudioHash
+        );
     }
 
     protected override void LoadComplete()

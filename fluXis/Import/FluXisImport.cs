@@ -178,6 +178,8 @@ public class FluXisImport : MapImporter
         var fileCount = archive.Entries.Count;
         var idx = 0;
 
+        Dictionary<string, string> audioHashes = new();
+
         foreach (var entry in archive.Entries)
         {
             var hash = GetHash(entry);
@@ -187,6 +189,13 @@ public class FluXisImport : MapImporter
             {
                 var json = new StreamReader(entry.Open()).ReadToEnd();
                 var mapInfo = json.Deserialize<MapInfo>();
+
+                if (!audioHashes.TryGetValue(mapInfo.AudioFile, out var audioHash))
+                {
+                    var audioEntry = archive.GetEntry(mapInfo.AudioFile);
+                    audioHash = audioEntry != null ? GetXXHash(audioEntry) : "";
+                    audioHashes[mapInfo.AudioFile] = audioHash;
+                }
 
                 var length = 0f;
                 var keys = 0;
@@ -231,6 +240,7 @@ public class FluXisImport : MapImporter
                     HealthDifficulty = mapInfo.HealthDifficulty,
                     MapSet = mapSet,
                     Hash = hash,
+                    AudioHash = audioHash,
                     KeyCount = keys,
                     StatusInt = MapStatus,
                     FileName = filename
