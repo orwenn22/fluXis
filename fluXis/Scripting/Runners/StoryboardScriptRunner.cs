@@ -17,6 +17,7 @@ namespace fluXis.Scripting.Runners;
 public class StoryboardScriptRunner : ScriptRunner
 {
     private readonly Storyboard storyboard;
+    private int version = 1;
 
     [LuaGlobal(Name = "screen")]
     public LuaVector2 ScreenResolution { get; }
@@ -34,6 +35,7 @@ public class StoryboardScriptRunner : ScriptRunner
         AddField("map", new LuaMap(map, Lua));
         AddField("AudioAnalyzer", new LuaAudioAnalyzer(audioAnalyzer, Lua));
 
+        AddFunction("SetVersion", (int v) => version = v);
         AddFunction("Add", add);
 
         // enums
@@ -72,7 +74,24 @@ public class StoryboardScriptRunner : ScriptRunner
     }
 
     [LuaGlobal(Name = "Add")]
-    private void add(LuaStoryboardElement element) => storyboard.Elements.Add(element.Build());
+    private void add(LuaStoryboardElement element)
+    {
+        var v = version;
+
+        while (v < Storyboard.LATEST_VERSION)
+        {
+            v++;
+
+            switch (v)
+            {
+                case 2:
+                    element.Animations.ForEach(x => x.StartTime -= element.StartTime);
+                    break;
+            }
+        }
+
+        storyboard.Elements.Add(element.Build());
+    }
 
     [LuaGlobal(Name = "StoryboardBox")]
     private LuaStoryboardBox newBox() => new();

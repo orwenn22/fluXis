@@ -246,7 +246,10 @@ public class MapInfo
 
         var json = File.ReadAllText(path);
         StoryboardHash = MapUtils.GetHash(json);
-        return json.Deserialize<Storyboard>();
+
+        var sb = json.Deserialize<Storyboard>();
+        sb.Update();
+        return sb;
     }
 
     [CanBeNull]
