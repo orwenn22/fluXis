@@ -1,4 +1,5 @@
 ﻿using System;
+using fluXis.Audio.FFT;
 using fluXis.Map;
 using fluXis.Scripting.Attributes;
 using fluXis.Scripting.Models;
@@ -20,7 +21,7 @@ public class StoryboardScriptRunner : ScriptRunner
     [LuaGlobal(Name = "screen")]
     public LuaVector2 ScreenResolution { get; }
 
-    public StoryboardScriptRunner(MapInfo map, Storyboard storyboard, LuaSettings settings, ISkin skin)
+    public StoryboardScriptRunner(MapInfo map, AudioAnalyzer audioAnalyzer, Storyboard storyboard, LuaSettings settings, ISkin skin)
     {
         this.storyboard = storyboard;
         Map = map;
@@ -31,6 +32,7 @@ public class StoryboardScriptRunner : ScriptRunner
         AddField("settings", settings);
         AddField("skin", new LuaSkin(skin));
         AddField("map", new LuaMap(map, Lua));
+        AddField("AudioAnalyzer", new LuaAudioAnalyzer(audioAnalyzer, Lua));
 
         AddFunction("Add", add);
 
