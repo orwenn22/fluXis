@@ -380,11 +380,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     {
                                         highPassEnabled = !highPassEnabled;
                                         highPass.CutoffTo(highPassEnabled ? 300 : 0, 400);
-                                    }, () => highPassEnabled),
-                                    new MenuToggleItem("Enable Visualization", FontAwesome6.Solid.ChartSimple, () =>
-                                    {
-                                        editorMap.MapInfo.EnableVisualization = !editorMap.MapInfo.EnableVisualization;
-                                    }, () => editorMap.MapInfo.EnableVisualization)
+                                    }, () => highPassEnabled)
                                 }),
                                 new MenuActionItem("Wiki", FontAwesome6.Solid.Book, openHelp)
                             }

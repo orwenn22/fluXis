@@ -179,6 +179,11 @@ public partial class SetupTab : EditorTab
                                                                 map.MapEvents.LaneSwitchEvents.ForEach(map.Update);
                                                             }
                                                         },
+                                                        new SetupToggle("Enable Visualization", map.MapInfo.EnableVisualization)
+                                                        {
+                                                            TooltipText = "Allows getting audio amplitude data in scripts",
+                                                            OnChange = value => map.MapInfo.EnableVisualization = value
+                                                        },
                                                         new SetupSlider<int>("Extra Playfields", map.MapInfo.ExtraPlayfields, 0, 9, 1)
                                                         {
                                                             Format = "0",

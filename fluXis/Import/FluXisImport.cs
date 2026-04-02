@@ -9,6 +9,7 @@ using fluXis.Map;
 using fluXis.Overlay.Notifications;
 using fluXis.Overlay.Notifications.Tasks;
 using fluXis.Utils;
+using fluXis.Utils.Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Logging;
 
@@ -193,7 +194,7 @@ public class FluXisImport : MapImporter
                 if (!audioHashes.TryGetValue(mapInfo.AudioFile, out var audioHash))
                 {
                     var audioEntry = archive.GetEntry(mapInfo.AudioFile);
-                    audioHash = audioEntry != null ? GetXXHash(audioEntry) : "";
+                    audioHash = audioEntry != null ? MapUtils.GetXXHash(audioEntry.ReadAllBytes()) : "";
                     audioHashes[mapInfo.AudioFile] = audioHash;
                 }
 

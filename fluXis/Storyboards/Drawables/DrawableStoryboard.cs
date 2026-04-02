@@ -43,14 +43,14 @@ public partial class DrawableStoryboard : CompositeDrawable
     }
 
     [BackgroundDependencyLoader]
-    private async void load(GameHost host)
+    private void load(GameHost host)
     {
         Storage = new StoryboardStorage(host, assetPath);
 
         // wait for FFT data to be ready before scripts can get amplitudes.
         try
         {
-            await audioAnalyzer.ComputeComplete.ConfigureAwait(false);
+            audioAnalyzer.ComputeComplete.Wait();
         }
         catch (OperationCanceledException)
         {
