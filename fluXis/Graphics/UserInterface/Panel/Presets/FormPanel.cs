@@ -11,6 +11,7 @@ using fluXis.Graphics.UserInterface.Buttons;
 using fluXis.Graphics.UserInterface.Color;
 using fluXis.Graphics.UserInterface.Interaction;
 using fluXis.Screens.Edit.Tabs.Setup.Entries;
+using fluXis.Utils.Attributes;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
@@ -123,6 +124,7 @@ public partial class FormPanel<T> : Panel, ICloseable
                 yield return new SetupTextBox(name)
                 {
                     Default = prop.GetValue(data) as string,
+                    Placeholder = prop.GetCustomAttribute<PlaceholderAttribute>()?.Placeholder ?? string.Empty,
                     MaxLength = prop.GetCustomAttribute<MaxLengthAttribute>()?.Length ?? 256,
                     ReadOnly = prop.GetCustomAttribute<ReadOnlyAttribute>()?.IsReadOnly ?? false,
                     Password = prop.GetCustomAttribute<PasswordPropertyTextAttribute>()?.Password ?? false,
