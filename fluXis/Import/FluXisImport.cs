@@ -242,7 +242,7 @@ public class FluXisImport : MapImporter
                     MapSet = mapSet,
                     Hash = hash,
                     AudioHash = audioHash,
-                    KeyCount = keys,
+                    KeyCount = (int)Math.Ceiling(keys / (mapInfo.IsSplit ? 2f : 1)),
                     StatusInt = MapStatus,
                     FileName = filename
                 };

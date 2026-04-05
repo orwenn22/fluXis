@@ -70,7 +70,7 @@ namespace fluXis;
 
 public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGlobalKeybind>
 {
-    public static readonly string[] AUDIO_EXTENSIONS = { ".mp3", ".wav", ".ogg", ".m4a", ".aac" };
+    public static readonly string[] AUDIO_EXTENSIONS = { ".mp3", ".wav", ".ogg" };
     public static readonly string[] IMAGE_EXTENSIONS = { ".jpg", ".jpeg", ".png" };
     public static readonly string[] VIDEO_EXTENSIONS = { ".mp4", ".mov", ".avi", ".flv", ".mpg", ".wmv", ".m4v" };
 
