@@ -36,6 +36,10 @@ public class HitObject : ITimedObject
     [JsonProperty("hidden")]
     public bool Hidden { get; set; }
 
+    // replicate the behavior of osu p-notes/NaN-notes, only relevant for mines
+    [JsonProperty("ghost")]
+    public bool Ghost { get; set; }
+
     /// <summary>
     /// 0 = Normal / Long
     /// 1 = Tick

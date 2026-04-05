@@ -151,9 +151,7 @@ public class OsuMap
             }
         }
 
-        // some gimmick maps might contain LNs with a start time equal to Nan to create fake notes (these are known as p notes)
-        // these are problematic when trying to play the map after converting, so ignore them for now
-        mapInfo.HitObjects.AddRange(HitObjects.FindAll(h => !float.IsNaN(h.StartTime)).Select(h => h.ToHitObjectInfo(this)));
+        mapInfo.HitObjects.AddRange(HitObjects.Select(h => h.ToHitObjectInfo(this)));
 
         foreach (var osuEvent in Events)
         {

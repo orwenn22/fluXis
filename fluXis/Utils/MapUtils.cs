@@ -147,7 +147,7 @@ public static class MapUtils
             if (hitObject.LongNote)
                 filters.LongNoteCount++;
             else if (hitObject.Landmine)
-                filters.LandmineCount++;
+                filters.LandmineCount += !hitObject.Ghost ? 1 : 0;
             else
                 filters.NoteCount++;
         }
