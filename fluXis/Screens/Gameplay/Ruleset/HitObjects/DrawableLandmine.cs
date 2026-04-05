@@ -1,5 +1,6 @@
 using fluXis.Input;
 using fluXis.Map.Structures;
+using fluXis.Scoring;
 using fluXis.Scoring.Enums;
 using fluXis.Screens.Gameplay.Input;
 using osu.Framework.Allocation;
@@ -9,7 +10,7 @@ namespace fluXis.Screens.Gameplay.Ruleset.HitObjects;
 
 public partial class DrawableLandmine : DrawableHitObject
 {
-    //public override HitWindows HitWindows => Ruleset.LandmineWindows;
+    public override HitWindows HitWindows => Ruleset.LandmineWindows;
 
     public override bool CanBeRemoved => Judged || didNotGetHit;
 
@@ -17,11 +18,11 @@ public partial class DrawableLandmine : DrawableHitObject
     {
         get
         {
-            //if the landmine is in the timing window of the next regular or long note, judge it as soon as it passes the receptors
+            // if the landmine is in the timing window of the next regular or long note, judge it as soon as it passes the receptors
             if (nextNote != null && TimeDelta <= 0)
                 return true;
 
-            return TimeDelta <= -Ruleset.LandmineWindows.TimingFor(Judgement.Miss);
+            return TimeDelta <= -HitWindows.TimingFor(Judgement.Miss);
         }
     }
 
@@ -30,7 +31,7 @@ public partial class DrawableLandmine : DrawableHitObject
 
     private bool isBeingHeld;
 
-    //Next non-landmine HitObject on the column. Only set if the landmine is in the hit window of the next note, null otherwise.
+    // next non-landmine HitObject on the column. Only set if the landmine is in the hit window of the next note, null otherwise.
     private HitObject nextNote;
 
     public DrawableLandmine(HitObject data)
@@ -41,7 +42,6 @@ public partial class DrawableLandmine : DrawableHitObject
     [BackgroundDependencyLoader]
     private void load()
     {
-        //Masking = false; //needed for using the cross in bar skin
         InternalChildren = new[]
         {
             Skin.GetLandmine(VisualLane, ObjectManager.KeyCount).With(d => d.RelativeSizeAxes = Axes.X),
@@ -49,7 +49,6 @@ public partial class DrawableLandmine : DrawableHitObject
 
         AlwaysPresent = true;
         if (Data.Hidden) Alpha = 0;
-        //if (Data.Hidden) InternalChild.Alpha = 0;
 
         nextNote = findNextNote();
     }
@@ -58,7 +57,6 @@ public partial class DrawableLandmine : DrawableHitObject
     {
         base.Update();
 
-        //TODO (?): make it more forgiving if the landmine is too close of the previous note?
         if (isBeingHeld)
             UpdateJudgement(true);
     }
@@ -73,7 +71,7 @@ public partial class DrawableLandmine : DrawableHitObject
                 return;
             }
 
-            ApplyResult(-Ruleset.LandmineWindows.TimingFor(Judgement.Flawless));
+            ApplyResult(-HitWindows.TimingFor(Judgement.Flawless));
             return;
         }
 
@@ -84,7 +82,7 @@ public partial class DrawableLandmine : DrawableHitObject
             return;
         }
 
-        if (Ruleset.LandmineWindows.CanBeHit(offset))
+        if (HitWindows.CanBeHit(offset))
             ApplyResult(offset);
     }
 
@@ -113,7 +111,7 @@ public partial class DrawableLandmine : DrawableHitObject
 
         while (next != null)
         {
-            if (next.Time - Data.Time > Ruleset.HitWindows.TimingFor(Judgement.Okay)) return null; //no need to keep going if the next note is too far away
+            if (next.Time - Data.Time > Ruleset.HitWindows.TimingFor(Judgement.Okay)) return null; // no need to keep going if the next note is too far away
             if (next.Type != 2) return next;
 
             next = next.NextObject;
