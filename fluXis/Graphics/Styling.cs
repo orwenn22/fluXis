@@ -46,5 +46,6 @@ public static class Styling
             Radius = radius
         };
     }
+
 #pragma warning restore RS0030
 }
