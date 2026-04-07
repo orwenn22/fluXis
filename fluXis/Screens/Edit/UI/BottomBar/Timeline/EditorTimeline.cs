@@ -41,6 +41,8 @@ public partial class EditorTimeline : Container
             },
             new TimelineTagContainer() { Offset = 10 },
             new TimelineDensity(),
+            new TimelineSVDensity(),
+            new TimelineEventDensity(),
             indicator = new TimelineIndicator()
         };
     }
