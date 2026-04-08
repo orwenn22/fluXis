@@ -307,11 +307,14 @@ public class FluXisRealm : IDisposable
                               .WithDegreeOfParallelism(Environment.ProcessorCount)
                               .Select(item =>
                               {
-                                  byte[] bytes;
+                                  byte[] bytes = [];
 
                                   try
                                   {
-                                      bytes = File.ReadAllBytes(item.Path);
+                                      if (File.Exists(item.Path))
+                                      {
+                                          bytes = File.ReadAllBytes(item.Path);
+                                      }
                                   }
                                   catch (Exception e)
                                   {

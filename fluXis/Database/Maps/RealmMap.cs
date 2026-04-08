@@ -134,7 +134,22 @@ public class RealmMap : RealmObject
             var json = File.ReadAllText(path);
             var hash = MapUtils.GetHash(json);
             var map = json.Deserialize<T>();
-            byte[] audioBytes = File.ReadAllBytes(MapFiles.GetFullPath(MapSet.GetPathForFile(map.AudioFile)));
+            byte[] audioBytes = [];
+            string fullAudioPath = MapFiles.GetFullPath(MapSet.GetPathForFile(map.AudioFile));
+
+            try
+            {
+                if (File.Exists(fullAudioPath))
+                {
+                    audioBytes = File.ReadAllBytes(fullAudioPath);
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, $"Failed to get audioHash for map info");
+                audioBytes = [];
+            }
+
             var audioHash = MapUtils.GetXXHash(audioBytes);
             map.RealmEntry = this;
             map.Hash = hash;
