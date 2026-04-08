@@ -227,9 +227,9 @@ public partial class AudioAnalyzer : Component
     }
 
     public virtual FFTFrame[] GetAmplitudes(
-        uint tStart,
-        uint tEnd,
-        uint interval,
+        int tStart,
+        int tEnd,
+        int interval,
         int binCount = FFT_BINS,
         FFTProcessor processor = null
     )
@@ -240,7 +240,7 @@ public partial class AudioAnalyzer : Component
         var cache = currentCache;
 
         // extra pad just in case it ever goes out of bounds
-        cache.ContainsAndAllocate(tStart, tEnd + RESOLUTION, out var missing);
+        cache.ContainsAndAllocate((uint)Math.Max(tStart, 0), (uint)Math.Max(tEnd, 0) + RESOLUTION, out var missing);
 
         var frames = cache.GetFrames(tStart, tEnd, interval);
 

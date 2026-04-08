@@ -27,9 +27,9 @@ public class LuaAudioAnalyzer : ILuaModel
         FFTParameters? parameters = null
     )
         => analyzer.GetAmplitudes(
-            (uint)startTime,
-            (uint)endTime,
-            (uint)interval,
+            (int)startTime,
+            (int)endTime,
+            (int)interval,
             amplitudeCount ?? AudioAnalyzer.FFT_BINS,
             (parameters is null) ? null : new FFTProcessor(parameters)
         ).ToLuaTable(lua);

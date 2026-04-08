@@ -17,17 +17,17 @@ public class FFTCache : IDisposable
 
     public required string Hash;
 
-    public FFTFrame[] GetFrames(uint tStart, uint tEnd, uint interval)
+    public FFTFrame[] GetFrames(int tStart, int tEnd, int interval)
     {
-        int outputFrames = (int)((tEnd - tStart) / interval) + 1;
+        int outputFrames = (tEnd - tStart) / interval + 1;
         var result = new FFTFrame[outputFrames];
 
         for (int i = 0; i < outputFrames; i++)
         {
-            uint t = tStart + (uint)(i * interval);
+            int t = tStart + i * interval;
 
-            uint tLow = (t / Resolution) * Resolution;
-            uint tHigh = tLow + Resolution;
+            int tLow = (t / (int)Resolution) * (int)Resolution;
+            int tHigh = tLow + (int)Resolution;
             float w = (t - tLow) / (float)Resolution;
 
             ReadOnlySpan<byte> frameLow = getRawFrame(tLow);
@@ -50,12 +50,15 @@ public class FFTCache : IDisposable
         return result;
     }
 
-    private ReadOnlySpan<byte> getRawFrame(uint t)
+    private ReadOnlySpan<byte> getRawFrame(int t)
     {
-        var range = ranges.Find(r => r.TStart <= t && r.TEnd > t); // TEnd exclusive
+        if (t < 0)
+            return new byte[FrameLen];
+
+        var range = ranges.Find(r => r.TStart <= (uint)t && r.TEnd > (uint)t);
         if (range == null) return new byte[FrameLen];
 
-        int frame = (int)((t - range.TStart) / Resolution);
+        int frame = (t - (int)range.TStart) / (int)Resolution;
         int offset = frame * (int)FrameLen;
 
         if (offset + FrameLen > range.DataLength)
