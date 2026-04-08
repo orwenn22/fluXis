@@ -72,7 +72,7 @@ public partial class AudioAnalyzer : Component
     public int SampleRate => channelInfo.Frequency;
 
     [Resolved]
-    private Storage storage { get; set; }
+    private GameHost host { get; set; }
 
     public Guid ID { get; private set; }
     public string AudioFileName { get; private set; }
@@ -82,7 +82,7 @@ public partial class AudioAnalyzer : Component
 
     private CancellationTokenSource cancelSource = new();
 
-    private Storage cacheStorage => storage.GetStorageForDirectory($"{FluXisGame.FFT_CACHE_PATH}/{ID}");
+    private Storage cacheStorage => host.CacheStorage.GetStorageForDirectory(FluXisGame.FFT_CACHE_PATH);
 
     private readonly Dictionary<string, FFTCache> caches = new();
     private readonly LinkedList<string> lru = new();

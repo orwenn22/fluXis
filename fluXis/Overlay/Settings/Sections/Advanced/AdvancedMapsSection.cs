@@ -36,10 +36,12 @@ public partial class AdvancedMapsSection : SettingsSubSection
     private FluXisRealm realm { get; set; }
 
     [Resolved]
-    private Storage storage { get; set; }
+    private NotificationManager notifications { get; set; }
 
     [Resolved]
-    private NotificationManager notifications { get; set; }
+    private GameHost host { get; set; }
+
+    private Storage cacheStorage => host.CacheStorage.GetStorageForDirectory(FluXisGame.FFT_CACHE_PATH);
 
     private SettingsItem clearFFTOption;
 
@@ -73,7 +75,7 @@ public partial class AdvancedMapsSection : SettingsSubSection
 
         Task.Run(() =>
         {
-            var path = storage.GetFullPath(FluXisGame.FFT_CACHE_PATH);
+            var path = cacheStorage.GetFullPath(FluXisGame.FFT_CACHE_PATH);
             var dir = new DirectoryInfo(path);
 
             if (!dir.Exists)
@@ -172,7 +174,7 @@ public partial class AdvancedMapsSection : SettingsSubSection
 
     private void clearFFTCache()
     {
-        storage.DeleteDirectory(FluXisGame.FFT_CACHE_PATH);
+        cacheStorage.DeleteDirectory(FluXisGame.FFT_CACHE_PATH);
         clearFFTOption.SetLabel($"{strings.ClearVisualizationCache} (No Cache)");
     }
 }

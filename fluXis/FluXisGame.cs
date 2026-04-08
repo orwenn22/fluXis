@@ -77,7 +77,7 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
     public static readonly string[] PROFILE_ASSET_EXTENSIONS = { ".jpg", ".jpeg", ".png" };
     public static readonly string[] SUPPORTER_PROFILE_ASSET_EXTENSIONS = { ".jpg", ".jpeg", ".png", ".gif" };
 
-    public static readonly string FFT_CACHE_PATH = "cache/fft";
+    public static readonly string FFT_CACHE_PATH = "fft";
 
     protected override bool LoadComponentsLazy => true;
     public override bool PrioritizeGlobalKeybindings => screenStack.CurrentScreen is not Editor || overlayContainer.Any(x => x.State.Value == Visibility.Visible);
