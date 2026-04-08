@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using fluXis.Audio.FFT.Serialization;
 using fluXis.Audio.FFT.Structures.Cache;
 using fluXis.Audio.FFT.Structures.Data;
+using fluXis.Database;
+using fluXis.Database.Maps;
 using JetBrains.Annotations;
 using ManagedBass;
 using osu.Framework.Allocation;
@@ -120,7 +122,26 @@ public partial class AudioAnalyzer : Component
         return cache;
     }
 
-    public virtual void ChangeAudio([CanBeNull] Stream newStream, Guid cacheId, string fileName, string audioHash)
+    public virtual void SetAudio(RealmMap map)
+    {
+        if (map is null) return;
+        if (!map.EnableVisualization) return;
+
+        string fullAudioPath = MapFiles.GetFullPath(map.FullAudioPath);
+
+        if (!File.Exists(fullAudioPath)) return;
+
+        Stream audioStream = File.OpenRead(fullAudioPath);
+
+        SetAudio(
+            audioStream,
+            map.MapSet.ID,
+            map.Metadata.Audio,
+            map.AudioHash
+        );
+    }
+
+    public virtual void SetAudio([CanBeNull] Stream newStream, Guid cacheId, string fileName, string audioHash)
     {
         if (audioHash != null && AudioHash != null && audioHash == AudioHash)
             return;

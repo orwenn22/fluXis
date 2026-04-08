@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using fluXis.Audio;
 using fluXis.Audio.FFT;
 using fluXis.Audio.Transforms;
 using fluXis.Configuration;
-using fluXis.Database;
 using fluXis.Database.Maps;
 using fluXis.Graphics.Background;
 using fluXis.Graphics.Sprites.Icons;
@@ -84,7 +82,6 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
 
     private BufferedContainer buffer;
     private GlobalClock globalClock;
-    private AudioAnalyzer audioAnalyzer;
     private GlobalBackground globalBackground;
     private Container screenContainer;
     private FluXisScreenStack screenStack;
@@ -97,6 +94,9 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
     private PanelContainer panelContainer;
     private FloatingNotificationContainer notificationContainer;
     private ExitAnimation exitAnimation;
+
+    private AudioAnalyzer audioAnalyzer;
+    private GlobalFFTProcessor fftProcessor;
 
     private SentryClient sentry { get; }
 
@@ -136,7 +136,8 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
         loadComponent(sentry, _ => { }, true);
         loadComponent(globalClock = new GlobalClock(), Add, true);
         GameDependencies.CacheAs<IBeatSyncProvider>(globalClock);
-        GameDependencies.CacheAs<IAmplitudeProvider>(globalClock);
+        // TODO: remove this later if we deem GlobalFFTProcessor to be worth being the main amplitude provider
+        // GameDependencies.CacheAs<IAmplitudeProvider>(globalClock);
 
         loadComponent(NotificationManager, Add);
 
@@ -171,10 +172,10 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
 
         loadComponent(MenuScreen = new MenuScreen());
 
-        loadComponent(audioAnalyzer = new AudioAnalyzer());
-        GameDependencies.CacheAs(audioAnalyzer);
-
-        MapStore.MapBindable.BindValueChanged(onMapChanged);
+        loadComponent(audioAnalyzer = new AudioAnalyzer(), Add, true);
+        loadComponent(fftProcessor = new GlobalFFTProcessor(), Add, true);
+        // GlobalClock was our main amplitude provider but have an actual processor now
+        GameDependencies.CacheAs<IAmplitudeProvider>(fftProcessor);
 
         LoadQueue.Push(new LoadTask("Downloading server config...", downloadServerConfig, false));
 
@@ -286,23 +287,6 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
             Schedule(() => WaitForReady(action));
         else
             action();
-    }
-
-    private void onMapChanged(ValueChangedEvent<RealmMap> m)
-    {
-        var map = m.NewValue;
-
-        if (map is null) return;
-        if (!map.EnableVisualization) return;
-
-        Stream stream = File.OpenRead(MapFiles.GetFullPath(map.FullAudioPath));
-
-        audioAnalyzer.ChangeAudio(
-            stream,
-            map.MapSet.ID,
-            map.Metadata.Audio,
-            map.AudioHash
-        );
     }
 
     protected override void LoadComplete()

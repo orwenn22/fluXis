@@ -124,6 +124,9 @@ public partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<FluXisGlo
     [Resolved]
     private GlobalClock globalClock { get; set; }
 
+    [Resolved(CanBeNull = true)]
+    private GlobalFFTProcessor fftProcessor { get; set; }
+
     [Resolved]
     private Storage storage { get; set; }
 
@@ -579,6 +582,7 @@ public partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<FluXisGlo
 
     public override bool OnExiting(ScreenExitEvent e)
     {
+        if (fftProcessor is not null) fftProcessor.Enabled.Value = true;
         this.FadeOut(Styling.TRANSITION_FADE);
 
         if (FadeBackToGlobalClock)
@@ -602,6 +606,9 @@ public partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<FluXisGlo
 
     public override void OnEntering(ScreenTransitionEvent e)
     {
+        // there is absolutely no reason for our global fft processor to be active during gameplay
+        if (fftProcessor is not null) fftProcessor.Enabled.Value = false;
+
         GameplayClock.Start();
         GameplayClock.RateTo(Rate, 0);
 

@@ -1,4 +1,5 @@
 using System.Linq;
+using fluXis.Audio.FFT;
 using fluXis.Graphics.Containers;
 using fluXis.Graphics.Sprites.Icons;
 using fluXis.Graphics.UserInterface.Color;
@@ -20,6 +21,9 @@ public partial class SetupTab : EditorTab
     public override string TabName => "Setup";
 
     private SetupSection metadata;
+
+    [Resolved]
+    private AudioAnalyzer analyzer { get; set; }
 
     [BackgroundDependencyLoader]
     private void load(EditorMap map)
@@ -182,7 +186,13 @@ public partial class SetupTab : EditorTab
                                                         new SetupToggle("Enable Visualization", map.MapInfo.EnableVisualization)
                                                         {
                                                             TooltipText = "Allows getting audio amplitude data in scripts",
-                                                            OnChange = value => map.MapInfo.EnableVisualization = value
+                                                            OnChange = value =>
+                                                            {
+                                                                map.MapInfo.EnableVisualization = value;
+
+                                                                // immediately start fft processing
+                                                                if (value) analyzer.SetAudio(map.RealmMap);
+                                                            }
                                                         },
                                                         new SetupSlider<int>("Extra Playfields", map.MapInfo.ExtraPlayfields, 0, 9, 1)
                                                         {
