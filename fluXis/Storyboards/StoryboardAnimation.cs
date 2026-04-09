@@ -91,6 +91,9 @@ public class StoryboardAnimation : ITimedObject, IHasDuration, IHasEasing, IDeep
         get => StartTime;
         set => StartTime = value;
     }
+
+    [JsonIgnore]
+    string ITimedObject.Group { get; set; }
 }
 
 public enum StoryboardAnimationType

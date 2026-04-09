@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using fluXis.Map.Structures.Bases;
 using fluXis.Scoring.Structs;
 using fluXis.Screens.Edit.Tabs.Charting.Playfield;
@@ -29,7 +28,6 @@ public class HitObject : ITimedObject
     [JsonProperty("hitsound")]
     public string HitSound { get; set; }
 
-    [DefaultValue("")]
     [JsonProperty("group", DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string Group { get; set; }
 
