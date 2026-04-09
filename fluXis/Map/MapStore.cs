@@ -527,7 +527,7 @@ public partial class MapStore : Component
                 {
                     notification.State = LoadingState.Failed;
                     status.State = DownloadState.Failed;
-                    Logger.Log($"Failed to update mapset: {ex.Message}", LoggingTarget.Network);
+                    Logger.Error(ex, $"Failed to update mapset: {ex.Message}", LoggingTarget.Network);
                 }
                 finally
                 {
