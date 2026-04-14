@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using fluXis.Audio;
+using fluXis.Audio.FFT;
 using fluXis.Audio.Transforms;
 using fluXis.Configuration;
 using fluXis.Database.Maps;
@@ -74,6 +75,8 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
     public static readonly string[] PROFILE_ASSET_EXTENSIONS = { ".jpg", ".jpeg", ".png" };
     public static readonly string[] SUPPORTER_PROFILE_ASSET_EXTENSIONS = { ".jpg", ".jpeg", ".png", ".gif" };
 
+    public static readonly string FFT_CACHE_PATH = "fft";
+
     protected override bool LoadComponentsLazy => true;
     public override bool PrioritizeGlobalKeybindings => screenStack.CurrentScreen is not Editor || overlayContainer.Any(x => x.State.Value == Visibility.Visible);
 
@@ -91,6 +94,9 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
     private PanelContainer panelContainer;
     private FloatingNotificationContainer notificationContainer;
     private ExitAnimation exitAnimation;
+
+    private AudioAnalyzer audioAnalyzer;
+    private GlobalFFTProcessor fftProcessor;
 
     private SentryClient sentry { get; }
 
@@ -130,7 +136,8 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
         loadComponent(sentry, _ => { }, true);
         loadComponent(globalClock = new GlobalClock(), Add, true);
         GameDependencies.CacheAs<IBeatSyncProvider>(globalClock);
-        GameDependencies.CacheAs<IAmplitudeProvider>(globalClock);
+        // TODO: remove this later if we deem GlobalFFTProcessor to be worth being the main amplitude provider
+        // GameDependencies.CacheAs<IAmplitudeProvider>(globalClock);
 
         loadComponent(NotificationManager, Add);
 
@@ -164,6 +171,11 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
         loadComponent(exitAnimation = new ExitAnimation(), Add);
 
         loadComponent(MenuScreen = new MenuScreen());
+
+        loadComponent(audioAnalyzer = new AudioAnalyzer(), Add, true);
+        loadComponent(fftProcessor = new GlobalFFTProcessor(), Add, true);
+        // GlobalClock was our main amplitude provider but have an actual processor now
+        GameDependencies.CacheAs<IAmplitudeProvider>(fftProcessor);
 
         LoadQueue.Push(new LoadTask("Downloading server config...", downloadServerConfig, false));
 

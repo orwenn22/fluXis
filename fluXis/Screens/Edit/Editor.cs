@@ -107,6 +107,9 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     [Resolved(CanBeNull = true)]
     private WikiOverlay wiki { get; set; }
 
+    [Resolved(CanBeNull = true)]
+    private GlobalFFTProcessor fftProcessor { get; set; }
+
     /// <summary>
     /// overwrites the tab the editor opens with
     /// </summary>
@@ -721,6 +724,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
         if (isNewMap) // delete the map if it was new and not saved
             mapStore.DeleteMapSet(editorMap.MapSet);
 
+        if (fftProcessor is not null) fftProcessor.Enabled.Value = true;
+
         // I hate this but it works. I hate this but it works. I hate this but it works.
         this.Delay(EditorLoader.DURATION * .98f).FadeOut();
 
@@ -735,6 +740,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
 
     public override void OnEntering(ScreenTransitionEvent e)
     {
+        // TODO: probably check back on this later if we add visualizations to editor in the future
+        if (fftProcessor is not null) fftProcessor.Enabled.Value = false;
         enterAnimation();
         FinishTransforms(true);
     }
