@@ -50,7 +50,7 @@ public partial class EditorGroupInfo : EditorVariableBase
             {
                 new FluXisSpriteText
                 {
-                    Text = "Groups",
+                    Text = "Scroll groups",
                     WebFontSize = 16
                 }
             }.Concat(groups.Groups.Where(x => x != "" && x[0] != '$').Select(x => new GroupEntry(x)
@@ -67,6 +67,13 @@ public partial class EditorGroupInfo : EditorVariableBase
                     {
                         panels.Content = new AddGroupPanel { OnAddGroup = addGroup };
                     }
+                },
+                new FluXisButton
+                {
+                    Text = "Add all groups",
+                    RelativeSizeAxes = Axes.X,
+                    Height = 30,
+                    Action = addAllGroups,
                 }
             })
         };
@@ -89,6 +96,38 @@ public partial class EditorGroupInfo : EditorVariableBase
 
         if (groups is ITimedObject obj) map.Update(obj);
 
+        updateChild();
+    }
+
+    private void addAllGroups()
+    {
+        groups.Groups.Clear();
+
+        foreach (var hitObject in map.MapInfo.HitObjects)
+        {
+            if (hitObject.Group != null && hitObject.Group[0] != '$')
+            {
+                if (!groups.Groups.Contains(hitObject.Group)) addGroup(hitObject.Group);
+            }
+        }
+
+        foreach (var sm in map.MapEvents.ScrollMultiplyEvents)
+        {
+            foreach (var group in sm.Groups)
+            {
+                if (!groups.Groups.Contains(group)) addGroup(group);
+            }
+        }
+
+        foreach (var sv in map.MapInfo.ScrollVelocities)
+        {
+            foreach (var group in sv.Groups)
+            {
+                if (!groups.Groups.Contains(group)) addGroup(group);
+            }
+        }
+
+        if (groups is ITimedObject obj) map.Update(obj);
         updateChild();
     }
 
