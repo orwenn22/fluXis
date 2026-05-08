@@ -8,21 +8,22 @@ using osuTK.Input;
 
 namespace fluXis.Screens.Edit.Tabs.Charting.Blueprints.Placement;
 
-public partial class TickNotePlacementBlueprint : NotePlacementBlueprint
+public partial class LandminePlacementBlueprint : NotePlacementBlueprint
 {
     public override bool AllowPainting => true;
     private readonly BlueprintNotePiece piece;
 
-    public TickNotePlacementBlueprint()
+    public LandminePlacementBlueprint()
     {
         RelativeSizeAxes = Axes.Both;
         InternalChild = piece = new BlueprintNotePiece
         {
             Anchor = Anchor.TopLeft,
-            Origin = Anchor.BottomLeft
+            Origin = Anchor.BottomLeft,
         };
+        //piece.Child.Colour = Theme.Red;
 
-        Hit.Type = HitObjectType.Tick;
+        Hit.Type = HitObjectType.Landmine;
     }
 
     public override void UpdatePlacement(double time, int lane)

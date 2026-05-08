@@ -5,18 +5,17 @@ using fluXis.Graphics.Drawables;
 using fluXis.Graphics.Sprites.Text;
 using fluXis.Graphics.UserInterface.Color;
 using fluXis.Graphics.UserInterface.Interaction;
-using fluXis.Screens.Edit.Input;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
-using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
 using osuTK;
+using osuTK.Input;
 
 namespace fluXis.Screens.Edit.Tabs.Setup.Entries;
 
-public partial class SetupKeymode : CompositeDrawable, IKeyBindingHandler<EditorKeybinding>
+public partial class SetupKeymode : CompositeDrawable
 {
     private int[] counts { get; } = { 4, 5, 6, 7, 8 };
     private int[] extraCounts { get; } = { 1, 2, 3, 9, 10 };
@@ -47,28 +46,22 @@ public partial class SetupKeymode : CompositeDrawable, IKeyBindingHandler<Editor
         };
     }
 
-    public bool OnPressed(KeyBindingPressEvent<EditorKeybinding> e)
+    protected override bool OnKeyDown(KeyDownEvent e)
     {
-        if (e.Action != EditorKeybinding.ShowAltKeyCounts) return false;
+        if (e.Key != Key.AltLeft && e.Key != Key.AltRight) return false;
 
-        keyCountButtonsContainer.Clear();
         keyCountButtonsContainer.ChildrenEnumerable = getEntries(true);
-
         return true;
     }
 
-    public void OnReleased(KeyBindingReleaseEvent<EditorKeybinding> e)
+    protected override void OnKeyUp(KeyUpEvent e)
     {
-        if (e.Action != EditorKeybinding.ShowAltKeyCounts) return;
+        if (e.Key != Key.AltLeft && e.Key != Key.AltRight) return;
 
-        keyCountButtonsContainer.Clear();
         keyCountButtonsContainer.ChildrenEnumerable = getEntries(false);
     }
 
-    private IEnumerable<Entry> getEntries(bool extra)
-    {
-        return (extra ? extraCounts : counts).Select(count => new Entry(count) { Width = 1f / counts.Length });
-    }
+    private IEnumerable<Entry> getEntries(bool extra) => (extra ? extraCounts : counts).Select(count => new Entry(count) { Width = 1f / counts.Length });
 
     private partial class Entry : BufferedContainer
     {
