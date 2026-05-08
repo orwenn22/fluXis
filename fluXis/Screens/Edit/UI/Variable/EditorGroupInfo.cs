@@ -39,6 +39,7 @@ public partial class EditorGroupInfo : EditorVariableBase
 
     private void updateChild()
     {
+        //TODO: display something like '[none]' if the IHasGroup don't have any groups at all (as in, not even lane groups)
         InternalChild = new FillFlowContainer
         {
             RelativeSizeAxes = Axes.X,
@@ -74,6 +75,14 @@ public partial class EditorGroupInfo : EditorVariableBase
                     RelativeSizeAxes = Axes.X,
                     Height = 30,
                     Action = addAllGroups,
+                },
+                new FluXisButton
+                {
+                    Text = "Clear groups",
+                    TooltipText = "NOTE: this will also clear the lane groups ($1, $2, etc) even though the editor will not display it\n",
+                    RelativeSizeAxes = Axes.X,
+                    Height = 30,
+                    Action = clearGroups,
                 }
             })
         };
@@ -128,6 +137,12 @@ public partial class EditorGroupInfo : EditorVariableBase
         }
 
         if (groups is ITimedObject obj) map.Update(obj);
+        updateChild();
+    }
+
+    private void clearGroups()
+    {
+        groups.Groups.Clear();
         updateChild();
     }
 

@@ -21,6 +21,7 @@ public partial class DesignPointsList : PointsList
     protected override void RegisterEvents()
     {
         RegisterTypeEvents(Map.MapInfo.ScrollVelocities);
+        RegisterTypeEvents(Map.MapInfo.AdditiveVelocities);
         RegisterTypeEvents(Map.MapEvents.FlashEvents);
         RegisterTypeEvents(Map.MapEvents.ColorFadeEvents);
         RegisterTypeEvents(Map.MapEvents.PulseEvents);
@@ -45,6 +46,7 @@ public partial class DesignPointsList : PointsList
     protected override PointListEntry CreateEntryFor(ITimedObject obj) => obj switch
     {
         ScrollVelocity scroll => new ScrollVelocityEntry(scroll),
+        AdditiveVelocity additive => new AdditiveVelocityEntry(additive),
         FlashEvent flash => new FlashEntry(flash),
         ColorFadeEvent colorFade => new ColorFadeEntry(colorFade),
         PulseEvent pulse => new PulseEntry(pulse),
@@ -70,6 +72,7 @@ public partial class DesignPointsList : PointsList
     protected override IEnumerable<DropdownEntry> CreateDropdownEntries() => new List<DropdownEntry>
     {
         CreateDefaultDropdownEntry<ScrollVelocity>("Scroll Velocity", Theme.ScrollVelocity),
+        CreateDefaultDropdownEntry<AdditiveVelocity>("Additive Velocity", Theme.AdditiveVelocity),
         CreateDefaultDropdownEntry<FlashEvent>("Flash", Theme.Flash),
         CreateDefaultDropdownEntry<ColorFadeEvent>("Color Fade", Theme.ColorFade),
         CreateDefaultDropdownEntry<PulseEvent>("Pulse", Theme.Pulse),

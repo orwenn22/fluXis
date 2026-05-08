@@ -26,7 +26,12 @@ public partial class TimelineBlueprintContainer : BlueprintContainer<StoryboardE
         base.LoadComplete();
 
         storyboard.ElementAdded += AddBlueprint;
+        storyboard.ElementRangeAdded += elements =>
+        {
+            foreach (var element in elements) AddBlueprint(element);
+        };
         storyboard.ElementRemoved += RemoveBlueprint;
+        storyboard.ElementsCleared += ClearBlueprints;
         storyboard.Elements.ForEach(AddBlueprint);
     }
 

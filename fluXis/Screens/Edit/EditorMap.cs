@@ -93,6 +93,7 @@ public class EditorMap : IVerifyContext
         notifiers = new List<IChangeNotifier>
         {
             new ChangeNotifier<HitObject>(MapInfo.HitObjects),
+            new ChangeNotifier<AdditiveVelocity>(MapInfo.AdditiveVelocities),
             new ChangeNotifier<TimingPoint>(MapInfo.TimingPoints),
             new ChangeNotifier<ScrollVelocity>(MapInfo.ScrollVelocities),
             new ChangeNotifier<LaneSwitchEvent>(MapEvents.LaneSwitchEvents),
@@ -122,8 +123,10 @@ public class EditorMap : IVerifyContext
         foreach (var notifier in notifiers)
         {
             notifier.OnAdd += t => AnyChange?.Invoke(t);
+            notifier.OnAddRange += t => AnyChange?.Invoke(t.FirstOrDefault()); // TODO: rn this is dirty hack to make it reload
             notifier.OnRemove += t => AnyChange?.Invoke(t);
             notifier.OnUpdate += t => AnyChange?.Invoke(t);
+            notifier.OnClear += () => AnyChange?.Invoke(new ScrollVelocity()); //  TODO: see above
         }
     }
 
@@ -233,6 +236,15 @@ public class EditorMap : IVerifyContext
         n.OnTypedAdd += act;
     }
 
+    public void RegisterAddRangeListener<T>(Action<IEnumerable<T>> act)
+        where T : class, ITimedObject
+    {
+        if (!tryFindNotifier<T>(out var n))
+            throw new InvalidOperationException($"Tried to register a listener for a type that doesn't exist! [{typeof(T).Name}]");
+
+        n.OnTypedAddRange += act;
+    }
+
     public void RegisterUpdateListener<T>(Action<T> act)
         where T : class, ITimedObject
     {
@@ -251,6 +263,15 @@ public class EditorMap : IVerifyContext
         n.OnTypedRemove += act;
     }
 
+    public void RegisterClearListener<T>(Action act)
+        where T : class, ITimedObject
+    {
+        if (!tryFindNotifier<T>(out var n))
+            throw new InvalidOperationException($"Tried to register a listener for a type that doesn't exist! [{typeof(T).Name}]");
+
+        n.OnTypedClear += act;
+    }
+
     public void DeregisterAddListener<T>(Action<T> act)
         where T : class, ITimedObject
     {
@@ -258,6 +279,15 @@ public class EditorMap : IVerifyContext
             throw new InvalidOperationException($"Tried to register a listener for a type that doesn't exist! [{typeof(T).Name}]");
 
         n.OnTypedAdd -= act;
+    }
+
+    public void DeregisterAddRangeListener<T>(Action<IEnumerable<T>> act)
+        where T : class, ITimedObject
+    {
+        if (!tryFindNotifier<T>(out var n))
+            throw new InvalidOperationException($"Tried to register a listener for a type that doesn't exist! [{typeof(T).Name}]");
+
+        n.OnTypedAddRange -= act;
     }
 
     public void DeregisterUpdateListener<T>(Action<T> act)
@@ -276,6 +306,15 @@ public class EditorMap : IVerifyContext
             throw new InvalidOperationException($"Tried to register a listener for a type that doesn't exist! [{typeof(T).Name}]");
 
         n.OnTypedRemove -= act;
+    }
+
+    public void DeregisterClearListener<T>(Action act)
+        where T : class, ITimedObject
+    {
+        if (!tryFindNotifier<T>(out var n))
+            throw new InvalidOperationException($"Tried to register a listener for a type that doesn't exist! [{typeof(T).Name}]");
+
+        n.OnTypedClear -= act;
     }
 
     #endregion
@@ -299,12 +338,40 @@ public class EditorMap : IVerifyContext
         return n != null;
     }
 
+    private bool tryRunNotifier(IEnumerable<ITimedObject> objs, Action<IChangeNotifier> action)
+    {
+        var n = notifiers.FirstOrDefault(n => n.Matches(objs.FirstOrDefault()?.GetType()));
+
+        if (n is not null)
+            action?.Invoke(n);
+
+        return n != null;
+    }
+
+    private bool tryRunNotifier<T>(Action<IChangeNotifier> action)
+    {
+        var n = notifiers.FirstOrDefault(n => n.Matches(typeof(T)));
+
+        if (n is not null)
+            action?.Invoke(n);
+
+        return n != null;
+    }
+
     public void Add(ITimedObject obj)
     {
         if (tryRunNotifier(obj, n => n.Add(obj)))
             return;
 
         throwMissingHandler(obj);
+    }
+
+    public void AddRange(IEnumerable<ITimedObject> objs)
+    {
+        if (tryRunNotifier(objs, n => n.AddRange(objs)))
+            return;
+
+        throwMissingHandler(objs.FirstOrDefault());
     }
 
     public void Update(ITimedObject obj)
@@ -323,6 +390,14 @@ public class EditorMap : IVerifyContext
             return;
 
         throwMissingHandler(obj);
+    }
+
+    public void Clear<T>()
+    {
+        if (tryRunNotifier<T>(n => n.Clear()))
+            return;
+
+        throw new ArgumentException($"Type '{typeof(T).Name}' does not have a change handler associated with it.");
     }
 
     private void throwMissingHandler(ITimedObject obj) => throw new ArgumentException($"Type '{obj.GetType().Name}' does not have a change handler associated with it.");
@@ -380,12 +455,16 @@ public class EditorMap : IVerifyContext
     public interface IChangeNotifier
     {
         event Action<ITimedObject> OnAdd;
+        event Action<IEnumerable<ITimedObject>> OnAddRange;
         event Action<ITimedObject> OnRemove;
         event Action<ITimedObject> OnUpdate;
+        event Action OnClear;
 
         void Add(ITimedObject obj);
+        void AddRange(IEnumerable<ITimedObject> obj);
         void Remove(ITimedObject obj);
         void Update(ITimedObject obj);
+        void Clear();
 
         void ApplyOffset(float offset);
 
@@ -401,25 +480,37 @@ public class EditorMap : IVerifyContext
         private Action<T> add { get; }
 
         [CanBeNull]
+        private Action<IEnumerable<T>> addRange { get; }
+
+        [CanBeNull]
         private Action<T> remove { get; }
 
         [CanBeNull]
         private Action<T> update { get; }
 
+        [CanBeNull]
+        private Action clear { get; }
+
         public event Action<ITimedObject> OnAdd;
+        public event Action<IEnumerable<ITimedObject>> OnAddRange;
         public event Action<ITimedObject> OnRemove;
         public event Action<ITimedObject> OnUpdate;
+        public event Action OnClear;
 
         public event Action<T> OnTypedAdd;
+        public event Action<IEnumerable<T>> OnTypedAddRange;
         public event Action<T> OnTypedRemove;
         public event Action<T> OnTypedUpdate;
+        public event Action OnTypedClear; // "TypedClear" might not make too much sense, but all the register methods use the "OnTyped*" so might as well make one for Clear too
 
-        public ChangeNotifier(List<T> list, Action<T> add = null, Action<T> remove = null, Action<T> update = null)
+        public ChangeNotifier(List<T> list, Action<T> add = null, Action<IEnumerable<T>> addRange = null, Action<T> remove = null, Action<T> update = null, Action clear = null)
         {
             this.list = list;
             this.add = add;
+            this.addRange = addRange;
             this.remove = remove;
             this.update = update;
+            this.clear = clear;
         }
 
         public void Add(ITimedObject obj)
@@ -428,6 +519,14 @@ public class EditorMap : IVerifyContext
             add?.Invoke((T)obj);
             OnAdd?.Invoke(obj);
             OnTypedAdd?.Invoke((T)obj);
+        }
+
+        public void AddRange(IEnumerable<ITimedObject> objs)
+        {
+            list.AddRange((IEnumerable<T>)objs);
+            addRange?.Invoke((IEnumerable<T>)objs);
+            OnAddRange?.Invoke(objs);
+            OnTypedAddRange?.Invoke((IEnumerable<T>)objs);
         }
 
         public void Remove(ITimedObject obj)
@@ -443,6 +542,14 @@ public class EditorMap : IVerifyContext
             update?.Invoke((T)obj);
             OnUpdate?.Invoke(obj);
             OnTypedUpdate?.Invoke((T)obj);
+        }
+
+        public void Clear()
+        {
+            list.Clear();
+            clear?.Invoke();
+            OnClear?.Invoke();
+            OnTypedClear?.Invoke();
         }
 
         public void ApplyOffset(float offset)

@@ -22,7 +22,7 @@ public partial class EditorTagContainer : Container<EditorTag>
 
     protected List<EditorTag> Tags { get; } = new();
     protected virtual bool RightSide => false;
-    
+
     private bool needsSort = false;
     private EditorTag[] sortedChildrenCache;
 
@@ -51,6 +51,19 @@ public partial class EditorTagContainer : Container<EditorTag>
 
         Tags.Remove(tag);
         Remove(tag, true);
+        needsSort = true;
+    }
+
+    protected void ClearTags<T>()
+    {
+        var tags = Children.Where(t => t.TimedObject is T).ToList();
+        foreach (var tag in tags)
+            Remove(tag, true);
+
+        tags = Tags.Where(t => t.TimedObject is T).ToList();
+        foreach (var tag in tags)
+            Tags.Remove(tag);
+
         needsSort = true;
     }
 

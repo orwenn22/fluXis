@@ -52,6 +52,7 @@ public static class Theme
 
     public static Colour4 TimingPoint => Colour4.FromHex("#00FF80");
     public static Colour4 ScrollVelocity => Colour4.FromHex("#00D4FF");
+    public static Colour4 AdditiveVelocity => Colour4.FromHex("#871F87");
     public static Colour4 PreviewPoint => Colour4.FromHex("FDD27F");
     public static Colour4 LaneSwitch => Colour4.FromHex("#FF6666");
     public static Colour4 Flash => Colour4.FromHex("#FFCC66");

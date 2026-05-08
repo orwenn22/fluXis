@@ -35,12 +35,16 @@ public class Storyboard : EditorMap.IChangeNotifier
     #endregion
 
     public event Action<StoryboardElement> ElementAdded;
+    public event Action<IEnumerable<StoryboardElement>> ElementRangeAdded;
     public event Action<StoryboardElement> ElementRemoved;
     public event Action<StoryboardElement> ElementUpdated;
+    public event Action ElementsCleared;
 
     public event Action<ITimedObject> OnAdd;
+    public event Action<IEnumerable<ITimedObject>> OnAddRange;
     public event Action<ITimedObject> OnRemove;
     public event Action<ITimedObject> OnUpdate;
+    public event Action OnClear;
 
     public void Update()
     {
@@ -74,6 +78,14 @@ public class Storyboard : EditorMap.IChangeNotifier
         OnAdd?.Invoke(element);
     }
 
+    // DO NOT USE THIS, IT'S PROBABLY BROKEN AND I ONLY MADE IT BECAUSE THE COMPILER ASKED FOR IT
+    public void AddRange(IEnumerable<ITimedObject> objs)
+    {
+        Elements.AddRange((IEnumerable<StoryboardElement>)objs);
+        ElementRangeAdded?.Invoke((IEnumerable<StoryboardElement>)objs);
+        OnAddRange?.Invoke(objs);
+    }
+
     public void Remove(ITimedObject obj)
     {
         var element = (StoryboardElement)obj;
@@ -89,6 +101,14 @@ public class Storyboard : EditorMap.IChangeNotifier
 
         ElementUpdated?.Invoke(element);
         OnUpdate?.Invoke(obj);
+    }
+
+    // DON'T USE THAT EITHER, UNTESTED
+    public void Clear()
+    {
+        Elements.Clear();
+        ElementsCleared?.Invoke();
+        OnClear?.Invoke();
     }
 
     public void ApplyOffset(float offset) => Elements.ForEach(x =>

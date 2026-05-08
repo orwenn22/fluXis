@@ -26,6 +26,13 @@ public partial class StoryboardLayerLines : Container
     {
         base.LoadComplete();
         map.Storyboard.ElementAdded += e => updateHighestZ(e.ZIndex);
+        map.Storyboard.ElementRangeAdded += elements =>
+        {
+            foreach (var e in elements)
+            {
+                updateHighestZ(e.ZIndex);
+            }
+        };
         map.Storyboard.ElementUpdated += e => updateHighestZ(e.ZIndex);
     }
 

@@ -355,10 +355,6 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                         { IsEnabled = () => ChartingContainer?.CanFlipSelection ?? false },
                                     new MenuActionItem("Shuffle Selection", FontAwesome6.Solid.Shuffle, () => ChartingContainer?.ShuffleSelection())
                                         { IsEnabled = () => ChartingContainer?.CanShuffleSelection ?? false },
-                                    new MenuActionItem("Set selection group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorAddNotesToGroupPanel
-                                    {
-                                        OnSetGroup = (s => ChartingContainer?.SetSelectionGroup(s))
-                                    }),
                                     new MenuActionItem("Re-snap all notes", FontAwesome6.Solid.ArrowsRotate, () => ChartingContainer?.ReSnapAll()),
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Select all", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.BlueprintContainer.SelectAll()),
@@ -389,7 +385,16 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                         highPass.CutoffTo(highPassEnabled ? 300 : 0, 400);
                                     }, () => highPassEnabled)
                                 }),
-                                new MenuActionItem("Wiki", FontAwesome6.Solid.Book, openHelp)
+                                new MenuActionItem("Wiki", FontAwesome6.Solid.Book, openHelp),
+                                new MenuExpandItem("SV", FontAwesome6.Solid.Star, new FluXisMenuItem[]
+                                {
+                                    new MenuActionItem("Set selection group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorAddNotesToGroupPanel
+                                    {
+                                        OnSetGroup = (s => ChartingContainer?.SetSelectionGroup(s))
+                                    }),
+                                    new MenuActionItem("null groups to lanes", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.NullGroupsToAllLanes()),
+                                    new MenuActionItem("AV to SV", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.AVToSV()),
+                                }),
                             }
                         },
                         new EditorTabSwitcher

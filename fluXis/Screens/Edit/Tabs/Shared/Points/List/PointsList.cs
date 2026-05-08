@@ -292,8 +292,10 @@ public abstract partial class PointsList : Container
         where T : class, ITimedObject
     {
         Map.RegisterAddListener<T>(AddPoint);
+        Map.RegisterAddRangeListener<T>(AddPointRange);
         Map.RegisterUpdateListener<T>(UpdatePoint);
         Map.RegisterRemoveListener<T>(RemovePoint);
+        Map.RegisterClearListener<T>(ClearPoints<T>);
         items.ForEach(AddPoint);
     }
 
@@ -401,6 +403,11 @@ public abstract partial class PointsList : Container
             sortPoints();
     }
 
+    protected void AddPointRange(IEnumerable<ITimedObject> objs)
+    {
+        foreach (var obj in objs) AddPoint(obj);
+    }
+
     public void ShowPoint(ITimedObject obj)
     {
         var entry = flow.FirstOrDefault(e => e.Object == obj);
@@ -421,6 +428,11 @@ public abstract partial class PointsList : Container
 
         if (entry != null)
             flow.Remove(entry, true);
+    }
+
+    protected void ClearPoints<T>() where T : ITimedObject
+    {
+        flow.RemoveRange(flow.Where(e => e.Object is T).ToList(), true);
     }
 
     protected override void UpdateAfterChildren()

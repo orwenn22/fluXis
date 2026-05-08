@@ -159,8 +159,13 @@ public partial class StoryboardTimeline : CompositeDrawable, ITimePositionProvid
         base.LoadComplete();
 
         storyboard.ElementAdded += add;
+        storyboard.ElementRangeAdded += elements =>
+        {
+            foreach (var e in elements) add(e);
+        };
         storyboard.ElementRemoved += remove;
         storyboard.ElementUpdated += update;
+        storyboard.ElementsCleared += clear;
         storyboard.Elements.ForEach(add);
     }
 
@@ -203,6 +208,11 @@ public partial class StoryboardTimeline : CompositeDrawable, ITimePositionProvid
     {
         var drawable = GetDrawable(element);
         drawable?.UpdateText();
+    }
+
+    private void clear()
+    {
+        elementContainer.Clear(); // really unsure about that but should be fine?
     }
 
     public TimelineElement GetDrawable(StoryboardElement element)

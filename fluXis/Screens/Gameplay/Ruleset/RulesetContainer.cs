@@ -125,7 +125,7 @@ public partial class RulesetContainer : CompositeDrawable
         for (int i = 0; i < MapInfo.RealmEntry!.KeyCount; i++)
             scrolls[$"${i + 1}"] = new ScrollGroup { Name = $"${i + 1}" };
 
-        var events = MapInfo.ScrollVelocities.Cast<IHasGroups>().Concat(MapEvents.ScrollMultiplyEvents).ToList();
+        var events = MapInfo.ScrollVelocities.Cast<IHasGroups>().Concat(MapEvents.ScrollMultiplyEvents).Concat(MapInfo.AdditiveVelocities).ToList();
         var groups = events.SelectMany(x => x.Groups).Distinct().Order().ToList();
 
         foreach (var group in groups)

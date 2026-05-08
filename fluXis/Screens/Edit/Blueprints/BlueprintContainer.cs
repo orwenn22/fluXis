@@ -135,6 +135,19 @@ public partial class BlueprintContainer<T> : Container, ICursorDrag
         SelectionBlueprints.Remove(blueprint, true);
     }
 
+    public void ClearBlueprints()
+    {
+        foreach (var blueprint in blueprints.Values)
+        {
+            blueprint.Deselect();
+            blueprint.Selected -= onSelected;
+            blueprint.Deselected -= onDeselected;
+            SelectionBlueprints.Remove(blueprint, true);
+        }
+
+        blueprints.Clear();
+    }
+
     protected virtual SelectionBlueprint<T> CreateBlueprint(T obj) => null!;
 
     private bool selectByClick(MouseButtonEvent e)

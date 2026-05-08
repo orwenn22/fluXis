@@ -388,6 +388,16 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
         ActionStack.Add(new NoteSetGroupAction(objects, newGroup));
     }
 
+    public void NullGroupsToAllLanes()
+    {
+        ActionStack.Add(new NullGroupsToAllLanesAction());
+    }
+
+    public void AVToSV()
+    {
+        ActionStack.Add(new AVToSVAction());
+    }
+
     public void ReSnapAll()
     {
         var objects = BlueprintContainer.SelectionHandler.SelectedObjects.OfType<HitObject>().ToList();
