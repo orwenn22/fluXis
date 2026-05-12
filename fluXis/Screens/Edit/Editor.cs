@@ -392,6 +392,10 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     {
                                         OnSetGroup = (s => ChartingContainer?.SetSelectionGroup(s))
                                     }),
+                                    new MenuActionItem("Rename scroll group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorRenameScrollGroupPanel()
+                                    {
+                                        OnRename = ((oldName, newName) => ChartingContainer?.RenameScrollGroup(oldName, newName))
+                                    }),
                                     new MenuActionItem("null groups to lanes", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.NullGroupsToAllLanes()),
                                     new MenuActionItem("AV to SV", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.AVToSV()),
                                 }),

@@ -114,7 +114,7 @@ public partial class EditorGroupInfo : EditorVariableBase
 
         foreach (var hitObject in map.MapInfo.HitObjects)
         {
-            if (hitObject.Group != null && hitObject.Group[0] != '$')
+            if (hitObject.Group != null && hitObject.Group[0] != '$' && hitObject.Group[0] != '!')
             {
                 if (!groups.Groups.Contains(hitObject.Group)) addGroup(hitObject.Group);
             }
@@ -124,6 +124,8 @@ public partial class EditorGroupInfo : EditorVariableBase
         {
             foreach (var group in sm.Groups)
             {
+                if (group[0] == '!') continue;
+
                 if (!groups.Groups.Contains(group)) addGroup(group);
             }
         }
@@ -132,6 +134,8 @@ public partial class EditorGroupInfo : EditorVariableBase
         {
             foreach (var group in sv.Groups)
             {
+                if (group[0] == '!') continue;
+
                 if (!groups.Groups.Contains(group)) addGroup(group);
             }
         }

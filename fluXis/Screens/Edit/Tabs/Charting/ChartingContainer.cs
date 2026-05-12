@@ -10,6 +10,7 @@ using fluXis.Overlay.Notifications;
 using fluXis.Screens.Edit.Actions.Events;
 using fluXis.Screens.Edit.Actions.Notes;
 using fluXis.Screens.Edit.Actions.Notes.Shortcuts;
+using fluXis.Screens.Edit.Actions.Sv;
 using fluXis.Screens.Edit.Input;
 using fluXis.Screens.Edit.Tabs.Charting.Blueprints;
 using fluXis.Screens.Edit.Tabs.Charting.Modding;
@@ -387,6 +388,16 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
         }
 
         ActionStack.Add(new NoteSetGroupAction(objects, newGroup));
+    }
+
+    public void RenameScrollGroup(string oldName, string newName)
+    {
+        if (oldName == "" || newName == "")
+        {
+            notifications.SendSmallText("Group name can't be empty.", FontAwesome6.Solid.XMark);
+        }
+
+        ActionStack.Add(new RenameScrollGroupAction(oldName, newName));
     }
 
     public void NullGroupsToAllLanes()
