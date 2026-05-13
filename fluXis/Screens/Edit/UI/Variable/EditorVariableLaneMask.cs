@@ -58,12 +58,8 @@ public partial class EditorVariableLaneMask : EditorVariableBase
 
                         var list = bind.ToList();
 
-                        // to save space, we can clear the list
-                        // since empty lists get applies to all lanes anyway
-                        if (list.Count == map.RealmMap.KeyCount && list.All(x => x.StartsWith('$')))
-                            list.Clear();
-
                         groups.Groups = list;
+                        map.Update(groups as ITimedObject);
                     }
                 }
             });
