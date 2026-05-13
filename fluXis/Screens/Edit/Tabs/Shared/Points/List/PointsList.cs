@@ -15,7 +15,9 @@ using fluXis.Graphics.UserInterface.Panel.Presets;
 using fluXis.Map.Structures.Bases;
 using fluXis.Screens.Edit.Actions;
 using fluXis.Screens.Edit.Actions.Events;
+using fluXis.Screens.Edit.Actions.Sv;
 using fluXis.Screens.Edit.Tabs.Design.Points;
+using fluXis.Screens.Edit.UI;
 using fluXis.UI;
 using JetBrains.Annotations;
 using osu.Framework.Allocation;
@@ -329,6 +331,26 @@ public abstract partial class PointsList : Container
         ActionStack.Add(new EventsMoveToTimeAction(selectedEntries.Select(x => x.Object).ToList(), clock.CurrentTime));
     }
 
+    private void scaleMultiplier(ITimedObject obj)
+    {
+        if (panels == null) return;
+
+        panels.Content = new EditorMultiplierScalePanel
+        {
+            OnScale = scale => ActionStack.Add(new EditorScaleSvAction(new List<ITimedObject> { obj }, scale))
+        };
+    }
+
+    private void scaleMultiplierSelected()
+    {
+        if (panels == null) return;
+
+        panels.Content = new EditorMultiplierScalePanel
+        {
+            OnScale = scale => ActionStack.Add(new EditorScaleSvAction(selectedEntries.Select(x => x.Object).ToList(), scale))
+        };
+    }
+
     private void sortPoints()
     {
         flow.OrderBy(e => e.Object.Time).ForEach(e => flow.SetLayoutPosition(e, (float)e.Object.Time));
@@ -391,6 +413,8 @@ public abstract partial class PointsList : Container
             entry.DeleteSelected = deleteSelected;
             entry.OnClone = o => Create(o);
             entry.MoveSelectedToCurrentTime = moveSelectionToCurrentTime;
+            entry.OnMultiplierScale = scaleMultiplier;
+            entry.OnMultiplierScaleSelected = scaleMultiplierSelected;
 
             entry.Selected += select;
             entry.Deselected += deselect;

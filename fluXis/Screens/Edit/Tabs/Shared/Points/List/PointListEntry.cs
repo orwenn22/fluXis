@@ -42,6 +42,7 @@ public abstract partial class PointListEntry : Container, IHasContextMenu
         new MenuActionItem("Move to current time", FontAwesome6.Solid.Clock, moveToCurrentTime),
         new MenuActionItem("Go to time", FontAwesome6.Solid.ArrowRight, goTo),
         new MenuActionItem("Bulk-Apply Group", FontAwesome6.Solid.ObjectGroup, applyGroup) { IsEnabled = () => State == SelectedState.Selected },
+        new MenuActionItem("Scale SV", FontAwesome6.Solid.Star, scaleSV),
         new MenuActionItem("Edit", FontAwesome6.Solid.PenRuler, OpenSettings),
         new MenuActionItem("Delete", FontAwesome6.Solid.Trash, MenuItemType.Dangerous, () => delete(false))
     };
@@ -74,6 +75,8 @@ public abstract partial class PointListEntry : Container, IHasContextMenu
     public Action DeleteSelected { get; set; }
     public Action CloneSelected { get; set; }
     public Action MoveSelectedToCurrentTime { get; set; }
+    public Action<ITimedObject> OnMultiplierScale { get; set; }
+    public Action OnMultiplierScaleSelected { get; set; }
     public Action<ITimedObject> OnClone { get; set; }
     public ITimedObject Object { get; }
 
@@ -306,6 +309,17 @@ public abstract partial class PointListEntry : Container, IHasContextMenu
             return;
 
         RequestApplyGroup?.Invoke();
+    }
+
+    private void scaleSV()
+    {
+        if (State == SelectedState.Selected)
+        {
+            OnMultiplierScaleSelected?.Invoke();
+            return;
+        }
+
+        OnMultiplierScale?.Invoke(Object);
     }
 
     private void goTo() => clock.SeekSmoothly(Object.Time);
