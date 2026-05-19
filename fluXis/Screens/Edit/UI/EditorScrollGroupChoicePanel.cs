@@ -10,16 +10,22 @@ using osuTK;
 
 namespace fluXis.Screens.Edit.UI;
 
-public partial class EditorAddNotesToGroupPanel : Panel
+public partial class EditorScrollGroupChoicePanel : Panel
 {
+    private readonly string title;
     private FluXisTextBox textBox;
 
-    public Action<string> OnSetGroup { get; set; }
+    public Action<string> OnConfirm { get; set; }
+
+    public EditorScrollGroupChoicePanel(string title = "Add notes to group")
+    {
+        this.title = title;
+    }
 
     [BackgroundDependencyLoader]
     private void load()
     {
-        Width = 420;
+        Width = 580;
         AutoSizeAxes = Axes.Y;
         Content.RelativeSizeAxes = Axes.X;
         Content.AutoSizeAxes = Axes.Y;
@@ -34,7 +40,7 @@ public partial class EditorAddNotesToGroupPanel : Panel
             {
                 new FluXisSpriteText
                 {
-                    Text = "Add notes to group",
+                    Text = title,
                     WebFontSize = 32,
                     Anchor = Anchor.TopCentre,
                     Origin = Anchor.TopCentre
@@ -44,15 +50,15 @@ public partial class EditorAddNotesToGroupPanel : Panel
                     RelativeSizeAxes = Axes.X,
                     PlaceholderText = "Group name"
                 },
-                new AuthOverlayButton("Set group") { Action = setGroup },
+                new AuthOverlayButton("Confirm") { Action = confirm },
                 new AuthOverlayButton("Cancel") { Action = Hide }
             }
         };
     }
 
-    private void setGroup()
+    private void confirm()
     {
-        OnSetGroup?.Invoke(textBox.Text);
+        OnConfirm?.Invoke(textBox.Text);
         Hide();
     }
 }

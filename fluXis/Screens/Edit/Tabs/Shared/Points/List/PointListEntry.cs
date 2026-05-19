@@ -43,6 +43,8 @@ public abstract partial class PointListEntry : Container, IHasContextMenu
         new MenuActionItem("Go to time", FontAwesome6.Solid.ArrowRight, goTo),
         new MenuActionItem("Bulk-Apply Group", FontAwesome6.Solid.ObjectGroup, applyGroup) { IsEnabled = () => State == SelectedState.Selected },
         new MenuActionItem("Scale SV", FontAwesome6.Solid.Star, scaleSV),
+        new MenuActionItem("Add scroll group", FontAwesome6.Solid.Star, addScrollGroup) { IsEnabled = () => Object is IHasGroups },
+        new MenuActionItem("Remove scroll group", FontAwesome6.Solid.Star, removeScrollGroup) { IsEnabled = () => Object is IHasGroups },
         new MenuActionItem("Edit", FontAwesome6.Solid.PenRuler, OpenSettings),
         new MenuActionItem("Delete", FontAwesome6.Solid.Trash, MenuItemType.Dangerous, () => delete(false))
     };
@@ -77,6 +79,10 @@ public abstract partial class PointListEntry : Container, IHasContextMenu
     public Action MoveSelectedToCurrentTime { get; set; }
     public Action<ITimedObject> OnMultiplierScale { get; set; }
     public Action OnMultiplierScaleSelected { get; set; }
+    public Action<ITimedObject> OnAddScrollGroup { get; set; }
+    public Action OnAddScrollGroupSelected { get; set; }
+    public Action<ITimedObject> OnRemoveScrollGroup { get; set; }
+    public Action OnRemoveScrollGroupSelected { get; set; }
     public Action<ITimedObject> OnClone { get; set; }
     public ITimedObject Object { get; }
 
@@ -320,6 +326,28 @@ public abstract partial class PointListEntry : Container, IHasContextMenu
         }
 
         OnMultiplierScale?.Invoke(Object);
+    }
+
+    private void addScrollGroup()
+    {
+        if (State == SelectedState.Selected)
+        {
+            OnAddScrollGroupSelected?.Invoke();
+            return;
+        }
+
+        OnAddScrollGroup?.Invoke(Object);
+    }
+
+    private void removeScrollGroup()
+    {
+        if (State == SelectedState.Selected)
+        {
+            OnRemoveScrollGroupSelected?.Invoke();
+            return;
+        }
+
+        OnRemoveScrollGroup?.Invoke(Object);
     }
 
     private void goTo() => clock.SeekSmoothly(Object.Time);

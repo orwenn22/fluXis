@@ -388,9 +388,9 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                 new MenuActionItem("Wiki", FontAwesome6.Solid.Book, openHelp),
                                 new MenuExpandItem("SV", FontAwesome6.Solid.Star, new FluXisMenuItem[]
                                 {
-                                    new MenuActionItem("Set selection group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorAddNotesToGroupPanel
+                                    new MenuActionItem("Set selection group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorScrollGroupChoicePanel
                                     {
-                                        OnSetGroup = (s => ChartingContainer?.SetSelectionGroup(s))
+                                        OnConfirm = (s => ChartingContainer?.SetSelectionGroup(s))
                                     }),
                                     new MenuActionItem("Rename scroll group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorRenameScrollGroupPanel()
                                     {

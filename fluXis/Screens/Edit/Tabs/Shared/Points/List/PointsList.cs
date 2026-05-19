@@ -351,6 +351,46 @@ public abstract partial class PointsList : Container
         };
     }
 
+    private void addScrollGroup(ITimedObject obj)
+    {
+        if (panels == null) return;
+
+        panels.Content = new EditorScrollGroupChoicePanel("Add scroll group (1 item)")
+        {
+            OnConfirm = group => ActionStack.Add(new EditorAddScrollGroupAction(new List<ITimedObject> { obj }, group))
+        };
+    }
+
+    private void addScrollGroupSelected()
+    {
+        if (panels == null) return;
+
+        panels.Content = new EditorScrollGroupChoicePanel($"Add scroll group ({selectedEntries.Count} items)")
+        {
+            OnConfirm = group => ActionStack.Add(new EditorAddScrollGroupAction(selectedEntries.Select(x => x.Object).ToList(), group))
+        };
+    }
+
+    private void removeScrollGroup(ITimedObject obj)
+    {
+        if (panels == null) return;
+
+        panels.Content = new EditorScrollGroupChoicePanel("Remove scroll group (1 item)")
+        {
+            OnConfirm = group => ActionStack.Add(new EditorRemoveScrollGroupAction(new List<ITimedObject> { obj }, group))
+        };
+    }
+
+    private void removeScrollGroupSelected()
+    {
+        if (panels == null) return;
+
+        panels.Content = new EditorScrollGroupChoicePanel($"Remove scroll group ({selectedEntries.Count} items)")
+        {
+            OnConfirm = group => ActionStack.Add(new EditorRemoveScrollGroupAction(selectedEntries.Select(x => x.Object).ToList(), group))
+        };
+    }
+
     private void sortPoints()
     {
         flow.OrderBy(e => e.Object.Time).ForEach(e => flow.SetLayoutPosition(e, (float)e.Object.Time));
@@ -415,6 +455,10 @@ public abstract partial class PointsList : Container
             entry.MoveSelectedToCurrentTime = moveSelectionToCurrentTime;
             entry.OnMultiplierScale = scaleMultiplier;
             entry.OnMultiplierScaleSelected = scaleMultiplierSelected;
+            entry.OnAddScrollGroup = addScrollGroup;
+            entry.OnAddScrollGroupSelected = addScrollGroupSelected;
+            entry.OnRemoveScrollGroup = removeScrollGroup;
+            entry.OnRemoveScrollGroupSelected = removeScrollGroupSelected;
 
             entry.Selected += select;
             entry.Deselected += deselect;
