@@ -26,6 +26,15 @@ public partial class EditorTagContainer : Container<EditorTag>
     private bool needsSort = false;
     private EditorTag[] sortedChildrenCache;
 
+    public delegate bool HighlightFileter(EditorTag tag);
+
+    private HighlightFileter highlightFilter;
+
+    public EditorTagContainer()
+    {
+        highlightFilter = _ => true;
+    }
+
     [BackgroundDependencyLoader]
     private void load()
     {
@@ -40,6 +49,7 @@ public partial class EditorTagContainer : Container<EditorTag>
     {
         tag.RightSide = RightSide;
         Tags.Add(tag);
+        setTagAlpha(tag);
     }
 
     protected void RemoveTag(ITimedObject obj)
@@ -86,6 +96,7 @@ public partial class EditorTagContainer : Container<EditorTag>
         {
             Tags.Remove(tag);
             Add(tag);
+            setTagAlpha(tag);
             needsSort = true;
         }
 
@@ -128,5 +139,18 @@ public partial class EditorTagContainer : Container<EditorTag>
                 tagsAtTime[time] = 1;
             }
         }
+    }
+
+    public void SetHighlightFilter(HighlightFileter highlightFilter)
+    {
+        this.highlightFilter = highlightFilter ?? (_ => true);
+
+        foreach (var tag in Children)
+            setTagAlpha(tag);
+    }
+
+    private void setTagAlpha(EditorTag tag)
+    {
+        tag.Alpha = highlightFilter.Invoke(tag) ? 1.0f : 0.4f;
     }
 }
