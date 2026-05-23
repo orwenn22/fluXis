@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using fluXis.Graphics.UserInterface.Color;
 using fluXis.Map.Structures;
+using fluXis.Utils;
 using Newtonsoft.Json;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Transforms;
@@ -75,11 +76,13 @@ public class EditorVibratoAction : EditorAction
 
     public override void Run(EditorMap map)
     {
-        //TODO: check if there are other effects called "vibrato" in the time range, and append some number if there is
+        // maybe these checks shouldn't be done here?
+        // TODO: check if there are other effects called "vibrato" in the time range, and append some number if there is
         if (string.IsNullOrEmpty(vibratoParams.EffectName)) vibratoParams.EffectName = "vibrato";
 
         if (vibratoParams.Groups.Count == 0 || (vibratoParams.Groups.Count == 1 && vibratoParams.Groups[0] == ""))
         {
+            vibratoParams.Groups.Clear(); // in case there is an empty string
             int laneCount = map.MapInfo.KeyCount;
             for (int i = 1; i <= laneCount; i++) vibratoParams.Groups.Add($"${i}");
         }
@@ -99,6 +102,9 @@ public class EditorVibratoAction : EditorAction
         DefaultEasingFunction upMultiplierEasingFunction = new DefaultEasingFunction(vibratoParams.UpMultiplierEasing);
         DefaultEasingFunction downMultiplierEasingFunction = new DefaultEasingFunction(vibratoParams.DownMultiplierEasing);
 
+        // surely this will never collide with another tag
+        string tag = MapUtils.GetHash(JsonConvert.SerializeObject(vibratoParams));
+
         addedVelocities = new List<AdditiveVelocity>();
 
         var hitObjectsInRange = new List<HitObject>();
@@ -112,12 +118,13 @@ public class EditorVibratoAction : EditorAction
 
         double vibratoInterval = 1000.0 / vibratoParams.Frequency;
 
-        // Collect all the raw vibrato times first
+        // collect all the raw vibrato times first
         var rawTimes = new List<double>();
         for (double t = startTime; t <= endTime; t += vibratoInterval)
             rawTimes.Add(t);
 
-        // Snap times that are within vibrationLength ms of a hit object to that hit object's time
+        // snap times that are within vibrationLength ms of a hit object to that hit object's time
+        // (reduces the amount of corrective AVs we need to put later on)
         var snappedTimes = rawTimes.Select(t =>
                                    {
                                        var nearby = hitObjectsInRange
@@ -138,13 +145,14 @@ public class EditorVibratoAction : EditorAction
             bool isFirst = i == 0;
             bool isLast = t >= endTime - vibratoInterval; // last peak before end
 
-            // Lerp intensity based on position in range
+            // intensity based on position in range
             double progress = (t - startTime) / (endTime - startTime);
             double easedProgress = easingFunction.ApplyEasing(progress);
             double intensity = startIntensity + (endIntensity - startIntensity) * easedProgress;
+
             double avValue = sign * intensity * (1.0 / vibrationLength);
 
-            //avValue *= avValue >= 0 ? downMultiplier : upMultiplier;
+            // avValue *= avValue >= 0 ? downMultiplier : upMultiplier;
             if (avValue >= 0)
             {
                 double multiplierEasedProgress = downMultiplierEasingFunction.ApplyEasing(progress);
@@ -161,21 +169,21 @@ public class EditorVibratoAction : EditorAction
             if (isFirst)
             {
                 // t: +intensity, t+1: 0
-                AddAV(map, t, avValue, effectName);
-                AddAV(map, t + vibrationLength, 0, effectName);
+                AddAV(map, t, avValue, effectName, tag);
+                AddAV(map, t + vibrationLength, 0, effectName, tag);
             }
             else if (isLast)
             {
                 // t-1: av_value (current sign), t: 0
-                AddAV(map, t - vibrationLength, -previousAvValue, effectName);
-                AddAV(map, t, 0, effectName);
+                AddAV(map, t - vibrationLength, -previousAvValue, effectName, tag);
+                AddAV(map, t, 0, effectName, tag);
             }
             else
             {
                 // t-1: previous sign's value (to ramp in), t: av_value, t+1: 0
-                AddAV(map, t - vibrationLength, -previousAvValue, effectName);
-                AddAV(map, t, avValue, effectName);
-                AddAV(map, t + vibrationLength, 0, effectName);
+                AddAV(map, t - vibrationLength, -previousAvValue, effectName, tag);
+                AddAV(map, t, avValue, effectName, tag);
+                AddAV(map, t + vibrationLength, 0, effectName, tag);
             }
 
             sign = -sign;
@@ -196,9 +204,9 @@ public class EditorVibratoAction : EditorAction
             double avValue = addedVelocities[previousAVindex].VelocityOffset;
 
             //NOTE: these adds the new corrective AVs at the end of the array, but this shouldn't be an issue (hopefully)
-            AddAV(map, t - vibrationLength, -avValue, effectName + "_corr");
-            AddAV(map, t, avValue, effectName + "_corr");
-            AddAV(map, t + vibrationLength, 0, effectName + "_corr");
+            AddAV(map, t - vibrationLength, -avValue, effectName + "_corr", tag);
+            AddAV(map, t, avValue, effectName + "_corr", tag);
+            AddAV(map, t + vibrationLength, 0, effectName + "_corr", tag);
         }
 
         map.Add(toolLog = new ToolLog
@@ -208,6 +216,7 @@ public class EditorVibratoAction : EditorAction
             Color = Theme.AdditiveVelocity,
             ToolName = "orwenn22.vibrato",
             ToolSettings = JsonConvert.SerializeObject(vibratoParams),
+            Tag = tag,
             Effective = true,
         });
     }
@@ -228,7 +237,7 @@ public class EditorVibratoAction : EditorAction
         addedVelocities.Clear();
     }
 
-    private void AddAV(EditorMap map, double time, double velocityOffset, string effectName)
+    private void AddAV(EditorMap map, double time, double velocityOffset, string effectName, string tag)
     {
         var av = new AdditiveVelocity
         {
@@ -236,6 +245,7 @@ public class EditorVibratoAction : EditorAction
             EffectName = effectName,
             Groups = new List<string>(vibratoParams.Groups),
             VelocityOffset = velocityOffset,
+            Tag = tag
         };
         map.Add(av);
         addedVelocities.Add(av);
@@ -262,6 +272,7 @@ public class EditorVibratoAction : EditorAction
         public VibratoParams()
         {
             EffectName = ""; // this should not be left empty
+            Groups = new List<string>();
             StartTime = 0;
             EndTime = 0;
             Easing = Easing.None;

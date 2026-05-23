@@ -29,10 +29,12 @@ public partial class EditorTagContainer : Container<EditorTag>
     public delegate bool HighlightFileter(EditorTag tag);
 
     private HighlightFileter highlightFilter;
+    private bool useHighlightFilter = false;
 
     public EditorTagContainer()
     {
         highlightFilter = _ => true;
+        useHighlightFilter = false;
     }
 
     [BackgroundDependencyLoader]
@@ -144,13 +146,18 @@ public partial class EditorTagContainer : Container<EditorTag>
     public void SetHighlightFilter(HighlightFileter highlightFilter)
     {
         this.highlightFilter = highlightFilter ?? (_ => true);
+        useHighlightFilter = true;
 
         foreach (var tag in Children)
             setTagAlpha(tag);
+
+        if (highlightFilter == null)
+            useHighlightFilter = false;
     }
 
     private void setTagAlpha(EditorTag tag)
     {
-        tag.Alpha = highlightFilter.Invoke(tag) ? 1.0f : 0.4f;
+        if (useHighlightFilter)
+            tag.Alpha = highlightFilter.Invoke(tag) ? 1.0f : 0.4f;
     }
 }

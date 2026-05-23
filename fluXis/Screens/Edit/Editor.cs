@@ -27,6 +27,7 @@ using fluXis.Graphics.UserInterface.Panel.Types;
 using fluXis.Input;
 using fluXis.Localization;
 using fluXis.Map;
+using fluXis.Map.Structures;
 using fluXis.Map.Structures.Events;
 using fluXis.Online.Activity;
 using fluXis.Online.API;
@@ -43,6 +44,7 @@ using fluXis.Screens.Edit.Tabs;
 using fluXis.Screens.Edit.Tabs.Charting;
 using fluXis.Screens.Edit.Tabs.Storyboarding;
 using fluXis.Screens.Edit.Tabs.Verify.Checks;
+using fluXis.Screens.Edit.Tool;
 using fluXis.Screens.Edit.UI;
 using fluXis.Screens.Edit.UI.BottomBar;
 using fluXis.Screens.Edit.UI.MenuBar;
@@ -150,6 +152,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     private bool canSave => editorMap.RealmMap.StatusInt < 100;
 
     private WindowContainer windowContainer;
+    private Dictionary<string, EditorTool> editorTools = new();
 
     public bool HasUnsavedChanges
     {
@@ -181,6 +184,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     {
         this.loader = loader;
         editorMap = new EditorMap(map, realmMap, LoadComponent, Scheduler);
+
+        RegisterTool(new VibratoTool());
     }
 
     [BackgroundDependencyLoader]
@@ -1101,5 +1106,24 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                 e.Message
             )));
         }
+    }
+
+    public void OpenWindow(Window window) => windowContainer.Add(window);
+
+    public void RegisterTool(EditorTool tool) => editorTools.Add(tool.Name, tool);
+
+    public EditorTool GetTool(ToolLog toolLog) => GetTool(toolLog.ToolName);
+
+    public EditorTool GetTool(string toolName) => editorTools.GetValueOrDefault(toolName);
+
+    public void OpenToolFromLog(ToolLog toolLog)
+    {
+        if (!editorTools.TryGetValue(toolLog.ToolName, out var tool))
+        {
+            notifications.SendError($"Could not find tool {toolLog.ToolName}");
+            return;
+        }
+
+        tool.OpenTool(this, toolLog);
     }
 }

@@ -56,12 +56,14 @@ public partial class VibratoWindow : Window
                 effectNameTextBox = new AuthOverlayTextBox
                 {
                     RelativeSizeAxes = Axes.X,
-                    PlaceholderText = "Effect name"
+                    PlaceholderText = "Effect name",
+                    Text = vibratoParams.EffectName
                 },
                 scrollGroupsTextBox = new AuthOverlayTextBox
                 {
                     RelativeSizeAxes = Axes.X,
-                    PlaceholderText = "Scroll groups"
+                    PlaceholderText = "Scroll groups",
+                    Text = string.Join(",", vibratoParams.Groups)
                 },
                 new HiddenSection()
                 {

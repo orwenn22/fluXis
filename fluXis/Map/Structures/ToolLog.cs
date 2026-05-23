@@ -6,6 +6,8 @@ using osuTK.Graphics;
 
 namespace fluXis.Map.Structures;
 
+// intended to store some metadata to know which tool has been used at which timestemps and with which params/settings
+// this way it is easier to replicate the effect at other parts of the map or re-apply it
 public class ToolLog : ITimedObject
 {
     [JsonProperty("time")]
@@ -33,14 +35,19 @@ public class ToolLog : ITimedObject
     public string ToolSettings { get; set; }
 
     // this is used to find which SVs or other kind of events were added by the tool, and basically makes it easier to undo the change later on
-    [JsonProperty("tool-tag", DefaultValueHandling = DefaultValueHandling.Ignore)]
-    public string ToolTag { get; set; }
+    [JsonProperty("tag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string Tag { get; set; }
 
-    // if set to true, it means all relevant objects are stored in the object array and are not actually in the map
+    // if set to false, it means all relevant objects are stored in the tool log and are not directly in the map
     [JsonProperty("effective")]
     public bool Effective { get; set; }
 
     // stores objects that were added by the tool if the log is not effective
-    [JsonProperty("objects")]
-    public List<ITimedObject> Objects { get; set; } = new();
+    [JsonProperty("scroll-velocities")]
+    public List<ScrollVelocity> ScrollVelocities { get; set; } = new();
+
+    [JsonProperty("additive-velocities")]
+    public List<AdditiveVelocity> AdditiveVelocities { get; set; } = new();
+
+    //TODO: more objects? (also add them in EditorToggleToolLogAction and others)
 }
