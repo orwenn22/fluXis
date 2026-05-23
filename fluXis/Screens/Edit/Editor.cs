@@ -47,6 +47,7 @@ using fluXis.Screens.Edit.UI;
 using fluXis.Screens.Edit.UI.BottomBar;
 using fluXis.Screens.Edit.UI.MenuBar;
 using fluXis.Screens.Edit.UI.TabSwitcher;
+using fluXis.Screens.Edit.Windows;
 using fluXis.Screens.Gameplay.Audio.Hitsounds;
 using fluXis.Scripting;
 using fluXis.Skinning.Default;
@@ -147,6 +148,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     private string lastStoryboardHash;
 
     private bool canSave => editorMap.RealmMap.StatusInt < 100;
+
+    private WindowContainer windowContainer;
 
     public bool HasUnsavedChanges
     {
@@ -259,6 +262,9 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
 
         keybinds = new EditorKeybindingContainer(this, config.GetBindable<string>(FluXisSetting.EditorKeymap), host);
         dependencies.CacheAs(keybinds);
+
+        dependencies.CacheAs(windowContainer = new WindowContainer());
+        // windowContainer.Add(new FunnyWindow());
 
         InternalChild = keybinds.WithChildren(new Drawable[]
         {
@@ -398,6 +404,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     }),
                                     new MenuActionItem("null groups to lanes", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.NullGroupsToAllLanes()),
                                     new MenuActionItem("AV to SV", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.AVToSV()),
+                                    new MenuActionItem("Vibrato", FontAwesome6.Solid.ObjectGroup, () => windowContainer.Add(new VibratoWindow { X = 100, Y = 100, })),
                                 }),
                             }
                         },
@@ -405,7 +412,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                         {
                             ChildrenEnumerable = tabs.Select(x => new EditorTabSwitcherButton(x.Icon, x.TabName, () => changeTab(tabs.IndexOf(x))))
                         },
-                        new EditorBottomBar()
+                        new EditorBottomBar(),
+                        windowContainer
                     }
                 }
             },

@@ -94,6 +94,7 @@ public class EditorMap : IVerifyContext
         {
             new ChangeNotifier<HitObject>(MapInfo.HitObjects),
             new ChangeNotifier<AdditiveVelocity>(MapInfo.AdditiveVelocities),
+            new ChangeNotifier<ToolLog>(MapInfo.ToolLogs),
             new ChangeNotifier<TimingPoint>(MapInfo.TimingPoints),
             new ChangeNotifier<ScrollVelocity>(MapInfo.ScrollVelocities),
             new ChangeNotifier<LaneSwitchEvent>(MapEvents.LaneSwitchEvents),

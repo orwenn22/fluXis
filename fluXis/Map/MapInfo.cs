@@ -37,6 +37,7 @@ public class MapInfo
     public List<TimingPoint> TimingPoints { get; set; }
     public List<ScrollVelocity> ScrollVelocities { get; set; }
     public List<AdditiveVelocity> AdditiveVelocities { get; set; }
+    public List<ToolLog> ToolLogs { get; set; }
     public List<HitSoundFade> HitSoundFades { get; set; }
 
     public float AccuracyDifficulty { get; set; } = 8;
@@ -142,6 +143,7 @@ public class MapInfo
         TimingPoints = new List<TimingPoint> { new() { BPM = 120, Time = 0, Signature = 4 } }; // Add default timing point to avoid issues
         ScrollVelocities = new List<ScrollVelocity>();
         AdditiveVelocities = new List<AdditiveVelocity>();
+        ToolLogs = new List<ToolLog>();
         HitSoundFades = new List<HitSoundFade>();
     }
 

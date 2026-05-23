@@ -1,18 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using fluXis.Map.Structures.Bases;
 using fluXis.Screens.Gameplay.Ruleset;
 using Newtonsoft.Json;
 
 namespace fluXis.Map.Structures;
 
-public class AdditiveVelocity : ITimedObject, IHasGroups
+public class AdditiveVelocity : ITimedObject, IHasGroups, IHasTag
 {
     [JsonProperty("time")]
     public double Time { get; set; }
 
     [JsonProperty("group", DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string Group { get; set; }
+
+    [DefaultValue("")]
+    [JsonProperty("tag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string Tag { get; set; } = "";
 
     [JsonProperty("velocity_offset")]
     public double VelocityOffset { get; set; } = 0;

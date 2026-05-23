@@ -1,18 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using fluXis.Map.Structures.Bases;
 using fluXis.Screens.Gameplay.Ruleset;
 using Newtonsoft.Json;
 
 namespace fluXis.Map.Structures;
 
-public class ScrollVelocity : ITimedObject, IHasGroups
+public class ScrollVelocity : ITimedObject, IHasGroups, IHasTag
 {
     [JsonProperty("time")]
     public double Time { get; set; }
 
     [JsonProperty("group", DefaultValueHandling = DefaultValueHandling.Ignore)]
     public string Group { get; set; }
+
+    [DefaultValue("")]
+    [JsonProperty("tag", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public string Tag { get; set; } = "";
 
     [JsonProperty("multiplier")]
     public double Multiplier { get; set; } = 1;
