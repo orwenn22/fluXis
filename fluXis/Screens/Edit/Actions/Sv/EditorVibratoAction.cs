@@ -14,7 +14,7 @@ public class EditorVibratoAction : EditorAction
 {
     public override string Description => "Add vibrato";
 
-    private double vibrationLength = 0.1;
+    private double vibrationLength = 0.05;
 
     VibratoParams vibratoParams;
 
@@ -28,7 +28,7 @@ public class EditorVibratoAction : EditorAction
         {
             EffectName = effectName,
             Groups = new List<string>(groups),
-            Frequency = 120,
+            Frequency = 145,
             StartTime = startTime,
             EndTime = endTime,
             StartIntensity = startIntensity,
@@ -278,7 +278,7 @@ public class EditorVibratoAction : EditorAction
             Easing = Easing.None;
             StartIntensity = 10;
             EndIntensity = 10;
-            Frequency = 120;
+            Frequency = 145;
             UpMultiplierStart = 1;
             UpMultiplierEnd = 1;
             UpMultiplierEasing = Easing.None;

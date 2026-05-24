@@ -29,7 +29,7 @@ public partial class EditorTagContainer : Container<EditorTag>
     public delegate bool HighlightFileter(EditorTag tag);
 
     private HighlightFileter highlightFilter;
-    private bool useHighlightFilter = false;
+    private bool useHighlightFilter = false; //TODO: this sucks, find a better way to achieve this
 
     public EditorTagContainer()
     {
@@ -149,6 +149,9 @@ public partial class EditorTagContainer : Container<EditorTag>
         useHighlightFilter = true;
 
         foreach (var tag in Children)
+            setTagAlpha(tag);
+
+        foreach (var tag in Tags)
             setTagAlpha(tag);
 
         if (highlightFilter == null)
