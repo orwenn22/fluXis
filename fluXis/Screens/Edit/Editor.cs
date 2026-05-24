@@ -58,6 +58,7 @@ using fluXis.Utils;
 using fluXis.Utils.Extensions;
 using JetBrains.Annotations;
 using ManagedBass.Fx;
+using Midori.Utils.Extensions;
 using osu.Framework.Allocation;
 using osu.Framework.Audio;
 using osu.Framework.Audio.Track;
@@ -180,6 +181,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     private EditorModding modding;
     private EditorOsd osd;
 
+    private Bindable<bool> autosave;
+
     public Editor(EditorLoader loader, RealmMap realmMap = null, EditorMap.EditorMapInfo map = null)
     {
         this.loader = loader;
@@ -193,6 +196,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     {
         BindableBackgroundDim = config.GetBindable<float>(FluXisSetting.EditorDim);
         BindableBackgroundBlur = config.GetBindable<float>(FluXisSetting.EditorBlur);
+
+        autosave = config.GetBindable<bool>(FluXisSetting.EditorAutoSave);
 
         globalClock.Looping = false;
 
@@ -310,6 +315,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                 new MenuExpandItem("File", FontAwesome6.Solid.File, new FluXisMenuItem[]
                                 {
                                     new MenuActionItem("Save", FontAwesome6.Solid.FloppyDisk, () => save()) { IsEnabled = () => HasUnsavedChanges },
+                                    new MenuToggleItem("Auto Save", FontAwesome6.Solid.FloppyDisk, autosave),
                                     new MenuSpacerItem(),
                                     new MenuActionItem("Create new difficulty...", FontAwesome6.Solid.Plus, () => panels.Content = new EditorDifficultyCreationPanel
                                     {
@@ -536,6 +542,12 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     protected override void Update()
     {
         base.Update();
+
+        if (autosave.Value)
+        {
+            var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            if (now - lastSaveTime > 1000 * 60 * 5) save();
+        }
 
         // too lazy to properly do this
         settings.InvertedScroll.Value = keybinds.Keymap.InvertScroll;
@@ -1058,7 +1070,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                 setID = editorMap.MapSet.OnlineID;
 
             var request = new MapSetUploadRequest(buffer, setID);
-            request.Progress += (l1, l2) => overlay.SubText = $"{StringUtils.FormatBytes(l1)}/{StringUtils.FormatBytes(l2)} {Math.Round((float)l1 / l2 * 100, 2).ToStringInvariant("00.00")}%";
+            request.Progress += (l1, l2) => overlay.SubText = $"{l1.FormatBytes()}/{l1.FormatBytes()} {Math.Round((float)l1 / l2 * 100, 2).ToStringInvariant("00.00")}%";
             await api.PerformRequestAsync(request);
 
             overlay.SubText = "Reading response...";
