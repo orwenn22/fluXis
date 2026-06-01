@@ -72,6 +72,7 @@ using osu.Framework.IO.Stores;
 using osu.Framework.Logging;
 using osu.Framework.Platform;
 using osu.Framework.Screens;
+using osuTK;
 using osuTK.Input;
 
 namespace fluXis.Screens.Edit;
@@ -189,6 +190,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
         editorMap = new EditorMap(map, realmMap, LoadComponent, Scheduler);
 
         RegisterTool(new VibratoTool());
+        RegisterTool(new SvEasingTool());
     }
 
     [BackgroundDependencyLoader]
@@ -273,8 +275,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
         keybinds = new EditorKeybindingContainer(this, config.GetBindable<string>(FluXisSetting.EditorKeymap), host);
         dependencies.CacheAs(keybinds);
 
-        dependencies.CacheAs(windowContainer = new WindowContainer());
-        // windowContainer.Add(new FunnyWindow());
+        dependencies.CacheAs(windowContainer = new WindowContainer { Scale = new Vector2(0.85f, 0.85f) });
+        windowContainer.Add(new FunnyWindow());
 
         InternalChild = keybinds.WithChildren(new Drawable[]
         {
@@ -416,6 +418,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     new MenuActionItem("null groups to lanes", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.NullGroupsToAllLanes()),
                                     new MenuActionItem("AV to SV", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.AVToSV()),
                                     new MenuActionItem("Vibrato", FontAwesome6.Solid.ObjectGroup, () => windowContainer.Add(new VibratoWindow { X = 100, Y = 100, })),
+                                    new MenuActionItem("SV easing", FontAwesome6.Solid.ObjectGroup, () => windowContainer.Add(new SvEasingWindow { X = 100, Y = 100, })),
                                 }),
                             }
                         },

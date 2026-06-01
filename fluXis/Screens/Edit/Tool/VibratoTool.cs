@@ -9,6 +9,7 @@ namespace fluXis.Screens.Edit.Tool;
 public class VibratoTool : EditorTool
 {
     public override string Name => "orwenn22.vibrato";
+    public override bool Clonable => true;
 
     public override void OpenTool(Editor editor, ToolLog toolLog)
     {
@@ -19,6 +20,15 @@ public class VibratoTool : EditorTool
     public override EditorAction GetReApplyAction(ToolLog toolLog)
     {
         var vibratoParams = JsonConvert.DeserializeObject<EditorVibratoAction.VibratoParams>(toolLog.ToolSettings);
+        return new EditorVibratoAction(vibratoParams);
+    }
+
+    public override EditorAction GetCloneAction(ToolLog toolLog, double cloneTime)
+    {
+        var vibratoParams = JsonConvert.DeserializeObject<EditorVibratoAction.VibratoParams>(toolLog.ToolSettings);
+        double duration = vibratoParams.EndTime - vibratoParams.StartTime;
+        vibratoParams.StartTime = cloneTime;
+        vibratoParams.EndTime = cloneTime + duration;
         return new EditorVibratoAction(vibratoParams);
     }
 }
