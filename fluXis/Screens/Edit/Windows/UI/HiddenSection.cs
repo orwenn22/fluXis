@@ -7,9 +7,8 @@ using osu.Framework.Input.Events;
 using osuTK;
 using osuTK.Input;
 
-namespace fluXis.Screens.Edit.Windows;
+namespace fluXis.Screens.Edit.Windows.UI;
 
-//TODO: MOVE THIS SOMEWHERE ELSE AND FIND A BETTER NAME
 public partial class HiddenSection : CompositeDrawable
 {
     public Drawable Content { get; init; }

@@ -6,6 +6,7 @@ using fluXis.Screens.Edit.Actions;
 using fluXis.Screens.Edit.Actions.Sv;
 using fluXis.Screens.Edit.UI.Variable;
 using fluXis.Screens.Edit.UI.Variable.Preset;
+using fluXis.Screens.Edit.Windows.UI;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;

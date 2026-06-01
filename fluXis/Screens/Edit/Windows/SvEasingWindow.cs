@@ -9,10 +9,10 @@ using fluXis.Screens.Edit.Actions;
 using fluXis.Screens.Edit.Actions.Sv;
 using fluXis.Screens.Edit.UI.Variable;
 using fluXis.Screens.Edit.UI.Variable.Preset;
+using fluXis.Screens.Edit.Windows.UI;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Shapes;
 using osuTK;
 
 namespace fluXis.Screens.Edit.Windows;
@@ -28,7 +28,7 @@ public partial class SvEasingWindow : Window
     private AuthOverlayTextBox scrollGroupsTextBox;
     private AuthOverlayTextBox effectNameTextBox;
 
-    private SvGraph svGraph;
+    private PreviewGraph svGraph;
 
     public SvEasingWindow()
         : this(new EditorSvEasingAction.SvEasingParams())
@@ -166,7 +166,7 @@ public partial class SvEasingWindow : Window
                         RelativeSizeAxes = Axes.X,
                         AutoSizeAxes = Axes.Y,
                         Padding = new MarginPadding(5),
-                        Child = svGraph = new SvGraph()
+                        Child = svGraph = new PreviewGraph()
                     }
                 },
                 averageText = new FluXisSpriteText
@@ -188,126 +188,25 @@ public partial class SvEasingWindow : Window
 
         averageText.Text = $"Average: {EditorSvEasingAction.AverageVelocity(svEasingParams)}";
         effectNameTextBox.Alpha = svEasingParams.UseAv ? 1 : 0;
-        svGraph.UpdateContent(svEasingParams);
+
+        if (svEasingParams.StartTime >= svEasingParams.EndTime) return;
+
+        List<double> values = svEasingParams.UseAv
+            ? EditorSvEasingAction.GenerateEffect(svEasingParams).Select(av => ((AdditiveVelocity)av).VelocityOffset).ToList()
+            : EditorSvEasingAction.GenerateEffect(svEasingParams).Select(sv => ((ScrollVelocity)sv).Multiplier).ToList();
+
+        svGraph.UpdateContent(values, (svEasingParams.UseAv) ? Theme.AdditiveVelocity : Theme.ScrollVelocity);
     }
 
     private void confirm()
     {
         List<string> groups = new List<string>(scrollGroupsTextBox.Text.Trim().Split(","));
-        // string effectName = effectNameTextBox.Text.Trim();
+        string effectName = effectNameTextBox.Text.Trim();
 
         ActionStack.Add(new EditorSvEasingAction(new EditorSvEasingAction.SvEasingParams(svEasingParams)
         {
-            AvEffectName = "",
+            AvEffectName = effectName,
             Groups = new List<string>(groups)
         }));
-    }
-
-    private partial class SvGraph : CompositeDrawable
-    {
-        private readonly FillFlowContainer topContainer;
-        private readonly FillFlowContainer bottomContainer;
-
-        public SvGraph()
-        {
-            RelativeSizeAxes = Axes.X;
-            AutoSizeAxes = Axes.Y;
-
-            InternalChild = new Container
-            {
-                Masking = true,
-                CornerRadius = 10,
-                RelativeSizeAxes = Axes.X,
-                AutoSizeAxes = Axes.Y,
-                Children = new Drawable[]
-                {
-                    new Box
-                    {
-                        RelativeSizeAxes = Axes.Both,
-                        Colour = Theme.Background1,
-                    },
-                    new FillFlowContainer
-                    {
-                        RelativeSizeAxes = Axes.X,
-                        AutoSizeAxes = Axes.Y,
-                        Direction = FillDirection.Vertical,
-                        Children = new Drawable[]
-                        {
-                            topContainer = new FillFlowContainer
-                            {
-                                RelativeSizeAxes = Axes.X,
-                                Height = 176,
-                                Direction = FillDirection.Horizontal,
-                            },
-                            new Box
-                            {
-                                RelativeSizeAxes = Axes.X,
-                                Height = 2,
-                                Colour = Theme.Text,
-                            },
-                            bottomContainer = new FillFlowContainer
-                            {
-                                RelativeSizeAxes = Axes.X,
-                                Height = 176,
-                                Direction = FillDirection.Horizontal,
-                            }
-                        }
-                    }
-                }
-            };
-        }
-
-        public void UpdateContent(EditorSvEasingAction.SvEasingParams svEasingParams)
-        {
-            if (svEasingParams.Resolution <= 0) return;
-            if (svEasingParams.StartTime >= svEasingParams.EndTime) return;
-
-            var effect = EditorSvEasingAction.GenerateEffect(svEasingParams);
-            var values = (svEasingParams.UseAv) ? effect.Select(e => ((AdditiveVelocity)e).VelocityOffset) : effect.Select(e => ((ScrollVelocity)e).Multiplier);
-
-            var maxScale = Math.Max(Math.Abs(values.Min()), Math.Abs(values.Max()));
-
-            if (maxScale == 0) return;
-
-            Colour4 colour = svEasingParams.UseAv ? Theme.AdditiveVelocity : Theme.ScrollVelocity;
-            topContainer.FadeColour(colour, 200, Easing.Out);
-            bottomContainer.FadeColour(colour, 200, Easing.Out);
-
-            if (topContainer.Count == svEasingParams.Resolution)
-            {
-                for (int i = 0; i < svEasingParams.Resolution; i++)
-                {
-                    var value = values.ElementAt(i);
-                    topContainer[i].ResizeHeightTo((value <= 0) ? 0f : (float)(value / maxScale), 200, Easing.Out);
-                    bottomContainer[i].ResizeHeightTo((value >= 0) ? 0f : (float)(-value / maxScale), 200, Easing.Out);
-                }
-
-                return;
-            }
-
-            topContainer.Clear();
-            bottomContainer.Clear();
-
-            foreach (var value in values)
-            {
-                topContainer.Add(new Box
-                {
-                    RelativeSizeAxes = Axes.Both,
-                    Anchor = Anchor.BottomLeft,
-                    Origin = Anchor.BottomLeft,
-                    Width = 1f / svEasingParams.Resolution,
-                    Height = (value <= 0) ? 0f : (float)(value / maxScale),
-                    Colour = Colour4.White
-                });
-
-                bottomContainer.Add(new Box
-                {
-                    RelativeSizeAxes = Axes.Both,
-                    Width = 1f / svEasingParams.Resolution,
-                    Height = (value >= 0) ? 0f : (float)(-value / maxScale),
-                    Colour = Colour4.White
-                });
-            }
-        }
     }
 }
