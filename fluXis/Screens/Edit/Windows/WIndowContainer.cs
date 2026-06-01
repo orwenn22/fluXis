@@ -20,6 +20,8 @@ public partial class WindowContainer : Container<Window>
     private void load()
     {
         RelativeSizeAxes = Axes.Both;
+        Width = 1 / Scale.X;
+        Height = 1 / Scale.Y;
     }
 
     protected override void LoadComplete()
@@ -73,6 +75,8 @@ public partial class WindowContainer : Container<Window>
         draggedWindow = window;
         draggedWindow.ClearTransforms(); // necessary to be able to drag windows while they are being moved to remain on screen
         this.dragOffset = dragOffset;
+        this.dragOffset.X *= Scale.X;
+        this.dragOffset.Y *= Scale.Y;
     }
 
     protected override void OnMouseUp(MouseUpEvent e)
@@ -86,7 +90,12 @@ public partial class WindowContainer : Container<Window>
     {
         if (draggedWindow == null) return false;
 
-        draggedWindow.Position = e.MousePosition - dragOffset;
+        Vector2 newPosition = e.MousePosition - dragOffset;
+        newPosition.X /= Scale.X;
+        newPosition.Y /= Scale.Y;
+
+        draggedWindow.Position = newPosition;
+
         return true;
     }
 }
