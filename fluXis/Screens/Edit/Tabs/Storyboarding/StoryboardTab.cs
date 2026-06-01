@@ -178,10 +178,17 @@ public partial class StoryboardTab : EditorTab
         base.LoadComplete();
 
         map.Storyboard.ElementAdded += onElementAdded;
-        map.Storyboard.ElementRangeAdded += (_) => { onElementAdded(); };
+        map.Storyboard.ElementRangeAdded += (elements) =>
+        {
+            // TODO: make this more efficient(?)
+            foreach (var e in elements)
+            {
+                onElementAdded(e);
+            }
+        };
         map.Storyboard.ElementRemoved += onElementRemoved;
         map.Storyboard.ElementUpdated += onElementUpdated;
-        // map.Storyboard.ElementsCleared += queueRebuild;
+        // map.Storyboard.ElementsCleared += queueRebuild; // TODO: figure this out
 
         map.RegisterAddListener<StoryboardAnimation>(onAnimationUpdated);
         map.RegisterUpdateListener<StoryboardAnimation>(onAnimationUpdated);
