@@ -276,7 +276,6 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
         dependencies.CacheAs(keybinds);
 
         dependencies.CacheAs(windowContainer = new WindowContainer { Scale = new Vector2(0.85f, 0.85f) });
-        windowContainer.Add(new FunnyWindow());
 
         InternalChild = keybinds.WithChildren(new Drawable[]
         {
