@@ -107,13 +107,16 @@ public class EditorVibratoAction : EditorAction
 
         addedVelocities = new List<AdditiveVelocity>();
 
-        var hitObjectsInRange = new List<HitObject>();
+        var hitObjectsTimes = new List<double>();
 
         foreach (var hitObject in map.MapInfo.HitObjects)
         {
             string hitObjectGroup = string.IsNullOrEmpty(hitObject.Group) ? $"${hitObject.Lane}" : hitObject.Group;
             if (hitObject.Time >= startTime && hitObject.Time <= endTime && groups.Contains(hitObjectGroup)) // we might want to add everything regardless of groups sometimes? idk
-                hitObjectsInRange.Add(hitObject);
+                hitObjectsTimes.Add(hitObject.Time);
+
+            if (hitObject.Type == HitObjectType.Normal && hitObject.EndTime >= startTime && hitObject.EndTime <= endTime && groups.Contains(hitObjectGroup))
+                hitObjectsTimes.Add(hitObject.EndTime);
         }
 
         double vibratoInterval = 1000.0 / vibratoParams.Frequency;
@@ -127,11 +130,13 @@ public class EditorVibratoAction : EditorAction
         // (reduces the amount of corrective AVs we need to put later on)
         var snappedTimes = rawTimes.Select(t =>
                                    {
-                                       var nearby = hitObjectsInRange
-                                                    .Where(h => Math.Abs(h.Time - t) < vibrationLength) // replace vibrationLength by 1.0 if something goes wrong
-                                                    .OrderBy(h => Math.Abs(h.Time - t))
-                                                    .FirstOrDefault();
-                                       return nearby?.Time ?? t;
+                                       var nearby = hitObjectsTimes
+                                                    .Where(hitObjectTime => Math.Abs(hitObjectTime - t) < vibrationLength) // replace vibrationLength by 1.0 if something goes wrong
+                                                    .OrderBy(hitObjectTime => Math.Abs(hitObjectTime - t));
+                                                    // .FirstOrDefault();
+
+                                       if (!nearby.Any()) return t;
+                                       else return nearby.FirstOrDefault();
                                    })
                                    // .Distinct().OrderBy(t => t)
                                    .ToList();
@@ -193,14 +198,14 @@ public class EditorVibratoAction : EditorAction
         double lastAvTime = addedVelocities.Last().Time;
 
         // add corrective AVs for notes that aren't on snapped times
-        foreach (var hitObject in hitObjectsInRange)
+        foreach (var hitObjectTime in hitObjectsTimes)
         {
-            if (snappedTimes.Contains(hitObject.Time) || hitObject.Time >= lastAvTime) continue;
+            if (snappedTimes.Contains(hitObjectTime) || hitObjectTime >= lastAvTime) continue;
 
-            int previousAVindex = this.previousAV(hitObject.Time) - 1;
+            int previousAVindex = previousAV(hitObjectTime) - 1;
             if (previousAVindex < 0) continue;
 
-            double t = hitObject.Time;
+            double t = hitObjectTime;
             double avValue = addedVelocities[previousAVindex].VelocityOffset;
 
             //NOTE: these adds the new corrective AVs at the end of the array, but this shouldn't be an issue (hopefully)

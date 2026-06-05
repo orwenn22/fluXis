@@ -108,21 +108,32 @@ public class EditorSvEasingAction : EditorAction
 
     public static List<ITimedObject> GenerateCorrection(SvEasingParams svParams, EditorMap map, double targetVelocity)
     {
+        const double spike_ms = 0.05; // width of the corrective spike (one side)
+
         var corrective = new List<ITimedObject>();
 
         var notes = map.MapInfo.HitObjects
                        .Where(h => h.Time > svParams.StartTime && h.Time < svParams.EndTime)
-                       .OrderBy(h => h.Time)
+                       .Select(h => h.Time)
                        .ToList();
 
-        foreach (var note in notes)
+        var lnTails = map.MapInfo.HitObjects
+                         .Where(h => h.Type == HitObjectType.Normal && h.EndTime > svParams.StartTime && h.EndTime < svParams.EndTime)
+                         .Select(h => h.EndTime)
+                         .ToList();
+
+        var times = notes.Concat(lnTails).OrderBy(t => t).ToList();
+
+        double previousCorrectionTime = -1;
+
+        foreach (var noteTime in times)
         {
-            double noteTime = note.Time;
+            // if (previousCorrectionTime >= noteTime) continue;
+            if (noteTime - previousCorrectionTime <= spike_ms) continue;
 
             // ok so, basically, for every note, we want to add an additive AV spike to make it so the average velocity
             // between the start of the effect and the note is the target velocity
             double windowMs = noteTime - svParams.StartTime; // total ms we care about
-            const double spike_ms = 0.05; // width of the corrective spike (one side)
 
             // Average of base effect over [StartTime, noteTime - spikeMs]
             double avgBefore = AverageVelocityInRange(svParams, svParams.StartTime, noteTime - spike_ms);
@@ -151,6 +162,8 @@ public class EditorSvEasingAction : EditorAction
                 Groups = new List<string>(svParams.Groups),
                 VelocityOffset = 0, // end of correction
             });
+
+            previousCorrectionTime = noteTime;
         }
 
         return corrective;
