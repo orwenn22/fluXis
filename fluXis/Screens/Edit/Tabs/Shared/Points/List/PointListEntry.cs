@@ -38,15 +38,15 @@ public abstract partial class PointListEntry : Container, IHasContextMenu
 
     public MenuItem[] ContextMenuItems => new MenuItem[]
     {
-        new MenuActionItem("Clone to current time", FontAwesome6.Solid.Clone, clone),
+        new MenuActionItem("Clone to current time", Phosphor.Bold.Copy, clone),
         new MenuActionItem("Move to current time", FontAwesome6.Solid.Clock, moveToCurrentTime),
-        new MenuActionItem("Go to time", FontAwesome6.Solid.ArrowRight, goTo),
-        new MenuActionItem("Bulk-Apply Group", FontAwesome6.Solid.ObjectGroup, applyGroup) { IsEnabled = () => State == SelectedState.Selected },
+        new MenuActionItem("Go to time", Phosphor.Bold.ArrowRight, goTo),
+        new MenuActionItem("Bulk-Apply Group", Phosphor.Bold.SelectionAll, applyGroup) { IsEnabled = () => State == SelectedState.Selected },
         new MenuActionItem("Scale SV", FontAwesome6.Solid.Star, scaleSV),
         new MenuActionItem("Add scroll group", FontAwesome6.Solid.Star, addScrollGroup) { IsEnabled = () => Object is IHasGroups },
         new MenuActionItem("Remove scroll group", FontAwesome6.Solid.Star, removeScrollGroup) { IsEnabled = () => Object is IHasGroups },
-        new MenuActionItem("Edit", FontAwesome6.Solid.PenRuler, OpenSettings),
-        new MenuActionItem("Delete", FontAwesome6.Solid.Trash, MenuItemType.Dangerous, () => delete(false))
+        new MenuActionItem("Edit", Phosphor.Bold.PencilRuler, OpenSettings),
+        new MenuActionItem("Delete", Phosphor.Bold.Trash, MenuItemType.Dangerous, () => delete(false))
     };
 
     public event Action<PointListEntry> Selected;

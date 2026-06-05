@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using fluXis.Audio;
-using fluXis.Audio.FFT;
 using fluXis.Audio.Transforms;
 using fluXis.Configuration;
 using fluXis.Database.Maps;
@@ -97,7 +96,6 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
     private FloatingNotificationContainer notificationContainer;
     private ExitAnimation exitAnimation;
 
-    private AudioAnalyzer audioAnalyzer;
     private GlobalFFTProcessor fftProcessor;
 
     private SentryClient sentry { get; }
@@ -174,7 +172,6 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
 
         loadComponent(MenuScreen = new MenuScreen());
 
-        loadComponent(audioAnalyzer = new AudioAnalyzer(), Add, true);
         loadComponent(fftProcessor = new GlobalFFTProcessor(), Add, true);
         // GlobalClock was our main amplitude provider but have an actual processor now
         GameDependencies.CacheAs<IAmplitudeProvider>(fftProcessor);
@@ -236,7 +233,7 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
         {
             panelContainer.Content = new ButtonPanel
             {
-                Icon = FontAwesome6.Solid.TriangleExclamation,
+                Icon = Phosphor.Bold.Warning,
                 Text = "Failed to download server config!",
                 SubText = "Online functionality will be unavailable.",
                 Buttons = new[]
@@ -312,8 +309,8 @@ public partial class FluXisGame : FluXisGameBase, IKeyBindingHandler<FluXisGloba
 
         ScheduleAfterChildren(() => screenStack.Push(new LoadingScreen(LoadQueue)));
 
-        APIClient.FriendOnline += u => Schedule(() => NotificationManager.SendSmallText($"{u.PreferredName} is now online!", FontAwesome6.Solid.UserPlus));
-        APIClient.FriendOffline += u => Schedule(() => NotificationManager.SendSmallText($"{u.PreferredName} is now offline!", FontAwesome6.Solid.UserMinus));
+        APIClient.FriendOnline += u => Schedule(() => NotificationManager.SendSmallText($"{u.PreferredName} is now online!", Phosphor.Bold.UserPlus));
+        APIClient.FriendOffline += u => Schedule(() => NotificationManager.SendSmallText($"{u.PreferredName} is now offline!", Phosphor.Bold.UserMinus));
         APIClient.AchievementEarned += a => Schedule(() => LoadComponentAsync(new AchievementOverlay(a), ov => Schedule(() => panelContainer.Content = ov)));
         APIClient.NameChangeRequested += () => WaitForReady(() => Schedule(() => panelContainer.Content = new UsernameChangePanel()));
 
