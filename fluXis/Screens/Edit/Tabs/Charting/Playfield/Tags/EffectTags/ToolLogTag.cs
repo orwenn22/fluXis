@@ -24,13 +24,13 @@ public partial class ToolLogTag : EditorTag, IHasContextMenu
 
     public MenuItem[] ContextMenuItems => new MenuItem[]
     {
-        new MenuActionItem("Open Tool", FontAwesome6.Solid.ScrewdriverWrench, MenuItemType.Highlighted, openTool),
-        new MenuActionItem("Re-apply", FontAwesome6.Solid.ArrowsRotate, MenuItemType.Highlighted, reApply),
+        new MenuActionItem("Open Tool", Phosphor.Bold.Wrench, MenuItemType.Highlighted, openTool),
+        new MenuActionItem("Re-apply", Phosphor.Bold.ArrowClockwise, MenuItemType.Highlighted, reApply),
         new MenuSpacerItem(),
-        new MenuToggleItem("Effective", FontAwesome6.Solid.Cube, toggleEffective, () => toolLog.Effective),
+        new MenuToggleItem("Effective", Phosphor.Bold.Cube, toggleEffective, () => toolLog.Effective),
         new MenuSpacerItem(),
-        new MenuActionItem("Delete Log", FontAwesome6.Solid.XMark, MenuItemType.Normal, () => deleteLog(false)),
-        new MenuActionItem("Delete Points and Log", FontAwesome6.Solid.Trash, MenuItemType.Dangerous, () => deleteLog(true)),
+        new MenuActionItem("Delete Log", Phosphor.Bold.X, MenuItemType.Normal, () => deleteLog(false)),
+        new MenuActionItem("Delete Points and Log", Phosphor.Bold.Trash, MenuItemType.Dangerous, () => deleteLog(true)),
     };
 
     public ToolLogTag(EditorTagContainer parent, ToolLog toolLog)

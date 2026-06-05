@@ -383,7 +383,7 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
 
         if (!objects.Any())
         {
-            notifications.SendSmallText("Nothing selected.", FontAwesome6.Solid.XMark);
+            notifications.SendSmallText("Nothing selected.", Phosphor.Bold.X);
             return;
         }
 
@@ -394,7 +394,7 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
     {
         if (oldName == "" || newName == "")
         {
-            notifications.SendSmallText("Group name can't be empty.", FontAwesome6.Solid.XMark);
+            notifications.SendSmallText("Group name can't be empty.", Phosphor.Bold.X);
         }
 
         ActionStack.Add(new RenameScrollGroupAction(oldName, newName));

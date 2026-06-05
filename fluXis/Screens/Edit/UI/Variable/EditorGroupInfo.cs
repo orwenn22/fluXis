@@ -194,7 +194,7 @@ public partial class EditorGroupInfo : EditorVariableBase
                     {
                         Anchor = Anchor.CentreRight,
                         Origin = Anchor.CentreRight,
-                        Icon = FontAwesome6.Solid.Trash,
+                        Icon = Phosphor.Bold.Trash,
                         ButtonSize = 26,
                         IconSize = 16,
                         Action = () => OnRemove?.Invoke(group)

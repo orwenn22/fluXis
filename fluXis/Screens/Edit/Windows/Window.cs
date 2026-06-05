@@ -184,7 +184,7 @@ public partial class Window : CompositeDrawable
                             {
                                 Anchor = Anchor.Centre,
                                 Origin = Anchor.Centre,
-                                Icon = FontAwesome6.Solid.AngleRight,
+                                Icon = Phosphor.Bold.CaretRight,
                                 ButtonSize = 24,
                                 IconSize = 13,
                                 Rotation = window.Minimized ? 0f : 90f,
@@ -210,7 +210,7 @@ public partial class Window : CompositeDrawable
                 {
                     Anchor = Anchor.CentreRight,
                     Origin = Anchor.CentreRight,
-                    Icon = FontAwesome6.Solid.XMark,
+                    Icon = Phosphor.Bold.X,
                     ButtonSize = 24,
                     IconSize = 13,
                     X = -4,

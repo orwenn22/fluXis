@@ -96,7 +96,7 @@ public partial class HiddenSection : CompositeDrawable
                         Size = new Vector2(16, 16),
                         Child = icon = new FluXisSpriteIcon()
                         {
-                            Icon = FontAwesome6.Solid.AngleRight,
+                            Icon = Phosphor.Bold.CaretRight,
                             Rotation = section.Collapsed ? 0 : 90,
                             Anchor = Anchor.Centre,
                             Origin = Anchor.Centre,

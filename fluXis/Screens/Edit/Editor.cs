@@ -404,20 +404,20 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     }, () => highPassEnabled)
                                 }),
                                 new MenuActionItem("Wiki", Phosphor.Bold.Book, openHelp),
-                                new MenuExpandItem("SV", FontAwesome6.Solid.Star, new FluXisMenuItem[]
+                                new MenuExpandItem("SV", Phosphor.Bold.Star, new FluXisMenuItem[]
                                 {
-                                    new MenuActionItem("Set selection group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorScrollGroupChoicePanel
+                                    new MenuActionItem("Set selection group", Phosphor.Bold.Selection, () => panels.Content = new EditorScrollGroupChoicePanel
                                     {
                                         OnConfirm = (s => ChartingContainer?.SetSelectionGroup(s))
                                     }),
-                                    new MenuActionItem("Rename scroll group", FontAwesome6.Solid.ObjectGroup, () => panels.Content = new EditorRenameScrollGroupPanel()
+                                    new MenuActionItem("Rename scroll group", Phosphor.Bold.CursorText, () => panels.Content = new EditorRenameScrollGroupPanel()
                                     {
                                         OnRename = ((oldName, newName) => ChartingContainer?.RenameScrollGroup(oldName, newName))
                                     }),
-                                    new MenuActionItem("null groups to lanes", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.NullGroupsToAllLanes()),
-                                    new MenuActionItem("AV to SV", FontAwesome6.Solid.ObjectGroup, () => ChartingContainer?.AVToSV()),
-                                    new MenuActionItem("Vibrato", FontAwesome6.Solid.ObjectGroup, () => windowContainer.Add(new VibratoWindow { X = 100, Y = 100, })),
-                                    new MenuActionItem("SV easing", FontAwesome6.Solid.ObjectGroup, () => windowContainer.Add(new SvEasingWindow { X = 100, Y = 100, })),
+                                    new MenuActionItem("null groups to lanes", Phosphor.Bold.Star, () => ChartingContainer?.NullGroupsToAllLanes()),
+                                    new MenuActionItem("AV to SV", Phosphor.Bold.Star, () => ChartingContainer?.AVToSV()),
+                                    new MenuActionItem("Vibrato", Phosphor.Bold.Vibrate, () => windowContainer.Add(new VibratoWindow { X = 100, Y = 100, })),
+                                    new MenuActionItem("SV easing", Phosphor.Bold.Star, () => windowContainer.Add(new SvEasingWindow { X = 100, Y = 100, })),
                                 }),
                             }
                         },

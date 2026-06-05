@@ -39,12 +39,12 @@ public abstract partial class PointListEntry : Container, IHasContextMenu
     public MenuItem[] ContextMenuItems => new MenuItem[]
     {
         new MenuActionItem("Clone to current time", Phosphor.Bold.Copy, clone),
-        new MenuActionItem("Move to current time", FontAwesome6.Solid.Clock, moveToCurrentTime),
+        new MenuActionItem("Move to current time", Phosphor.Bold.Clock, moveToCurrentTime),
         new MenuActionItem("Go to time", Phosphor.Bold.ArrowRight, goTo),
         new MenuActionItem("Bulk-Apply Group", Phosphor.Bold.SelectionAll, applyGroup) { IsEnabled = () => State == SelectedState.Selected },
-        new MenuActionItem("Scale SV", FontAwesome6.Solid.Star, scaleSV),
-        new MenuActionItem("Add scroll group", FontAwesome6.Solid.Star, addScrollGroup) { IsEnabled = () => Object is IHasGroups },
-        new MenuActionItem("Remove scroll group", FontAwesome6.Solid.Star, removeScrollGroup) { IsEnabled = () => Object is IHasGroups },
+        new MenuActionItem("Scale SV", Phosphor.Bold.Star, scaleSV),
+        new MenuActionItem("Add scroll group", Phosphor.Bold.Star, addScrollGroup) { IsEnabled = () => Object is IHasGroups },
+        new MenuActionItem("Remove scroll group", Phosphor.Bold.Star, removeScrollGroup) { IsEnabled = () => Object is IHasGroups },
         new MenuActionItem("Edit", Phosphor.Bold.PencilRuler, OpenSettings),
         new MenuActionItem("Delete", Phosphor.Bold.Trash, MenuItemType.Dangerous, () => delete(false))
     };
