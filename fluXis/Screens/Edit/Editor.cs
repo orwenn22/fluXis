@@ -48,6 +48,7 @@ using fluXis.Screens.Edit.Tool;
 using fluXis.Screens.Edit.UI;
 using fluXis.Screens.Edit.UI.BottomBar;
 using fluXis.Screens.Edit.UI.MenuBar;
+using fluXis.Screens.Edit.UI.Panels;
 using fluXis.Screens.Edit.UI.TabSwitcher;
 using fluXis.Screens.Edit.Windows;
 using fluXis.Screens.Gameplay.Audio.Hitsounds;
@@ -472,13 +473,14 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
         lastStoryboardHash = EditorMap.StoryboardHash;
     }
 
-    private void applyOffset()
+    private void applyOffset() => panels.Add(new FormPanel<EditorApplyOffset>(Phosphor.Bold.Clock, "Apply offset to map", new EditorApplyOffset(), (panel, offset) =>
     {
-        panels.Content = new EditorOffsetPanel
-        {
-            OnApplyOffset = offset => actionStack.Add(new ApplyOffsetAction(offset))
-        };
-    }
+        if (!offset.Offset.TryParseDoubleInvariant(out var result))
+            return false;
+
+        actionStack.Add(new ApplyOffsetAction(result));
+        return true;
+    }));
 
     private void createNewDiff(CreateNewMapParameters param)
     {
