@@ -398,19 +398,6 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
         ActionStack.Add(new NoteMultiPlaceAction(added.ToArray()));
     }
 
-    public void SetSelectionGroup(string newGroup)
-    {
-        var objects = BlueprintContainer.SelectionHandler.SelectedObjects.OfType<HitObject>().ToList();
-
-        if (!objects.Any())
-        {
-            notifications.SendSmallText("Nothing selected.", Phosphor.Bold.X);
-            return;
-        }
-
-        ActionStack.Add(new NoteSetGroupAction(objects, newGroup));
-    }
-
     public void RenameScrollGroup(string oldName, string newName)
     {
         if (oldName == "" || newName == "")

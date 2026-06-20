@@ -417,10 +417,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                 new MenuActionItem("Wiki", Phosphor.Bold.Book, openHelp),
                                 new MenuExpandItem("SV", Phosphor.Bold.Star, new FluXisMenuItem[]
                                 {
-                                    new MenuActionItem("Set selection group", Phosphor.Bold.Selection, () => panels.Content = new EditorScrollGroupChoicePanel
-                                    {
-                                        OnConfirm = (s => ChartingContainer?.SetSelectionGroup(s))
-                                    }),
+                                    new MenuActionItem("Set selection group", Phosphor.Bold.Selection, () => ChartingContainer?.ApplyGroupToSelection()),
                                     new MenuActionItem("Rename scroll group", Phosphor.Bold.CursorText, () => panels.Content = new EditorRenameScrollGroupPanel()
                                     {
                                         OnRename = ((oldName, newName) => ChartingContainer?.RenameScrollGroup(oldName, newName))
