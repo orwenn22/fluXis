@@ -4,6 +4,8 @@ using System.Linq;
 using fluXis.Graphics.Background;
 using fluXis.Graphics.Sprites;
 using fluXis.Graphics.Sprites.Icons;
+using fluXis.Graphics.UserInterface.Panel;
+using fluXis.Graphics.UserInterface.Panel.Presets;
 using fluXis.Map.Structures;
 using fluXis.Online.API.Models.Maps;
 using fluXis.Overlay.Notifications;
@@ -22,7 +24,9 @@ using fluXis.Screens.Edit.Tabs.Charting.Tools.Effects;
 using fluXis.Screens.Edit.Tabs.Shared;
 using fluXis.Screens.Edit.Tabs.Shared.Points;
 using fluXis.Screens.Edit.Tabs.Shared.Toolbox;
+using fluXis.Screens.Edit.UI.Panels;
 using fluXis.Screens.Gameplay.Audio.Hitsounds;
+using JetBrains.Annotations;
 using Midori.Utils;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
@@ -70,10 +74,13 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
     [Resolved]
     private NotificationManager notifications { get; set; }
 
+    [CanBeNull]
+    [Resolved(CanBeNull = true)]
+    private PanelContainer panels { get; set; }
+
     public Bindable<string> CurrentHitSound { get; } = new($"{Hitsounding.DEFAULT_PREFIX}normal");
 
     private DependencyContainer dependencies;
-    private InputManager inputManager;
     private bool recordingInput;
 
     private ToolboxHitsoundCategory toolboxHitsounds;
@@ -87,8 +94,7 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
     public IEnumerable<EditorHitObject> HitObjects => Playfields.SelectMany(x => x.HitObjectContainer.HitObjects);
     public bool CursorInPlacementArea => Playfields.Any(p => p.CursorInPlacementArea);
 
-    public bool CanFlipSelection => BlueprintContainer.SelectionHandler.SelectedObjects.Any(x => x is HitObject);
-    public bool CanShuffleSelection => BlueprintContainer.SelectionHandler.SelectedObjects.Any(x => x is HitObject);
+    public bool SelectedAny => BlueprintContainer.SelectionHandler.SelectedObjects.Count != 0;
 
     protected override void BeforeLoad()
     {
@@ -104,8 +110,6 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
     protected override void LoadComplete()
     {
         base.LoadComplete();
-
-        inputManager = GetContainingInputManager();
 
         Modding.OnDisable += () =>
         {
@@ -135,7 +139,7 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
         BlueprintContainer = new ChartingBlueprintContainer { ChartingContainer = this }
     };
 
-    protected override Drawable CreateLeftSide() => new EditorToolbox()
+    protected override Drawable CreateLeftSide() => new EditorToolbox
     {
         Categories = new ToolboxCategory[]
         {
@@ -265,6 +269,10 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
                 ShuffleSelection();
                 return true;
 
+            case EditorKeybinding.ApplyGroupSelection:
+                ApplyGroupToSelection();
+                return true;
+
             case EditorKeybinding.CloneSelection:
                 CloneSelection();
                 return true;
@@ -277,7 +285,7 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
             {
                 var current = Map.MapInfo.GetTimingPoint(EditorClock.CurrentTime);
 
-                var point = new TimingPoint()
+                var point = new TimingPoint
                 {
                     Time = EditorClock.CurrentTime,
                     BPM = current.BPM,
@@ -324,41 +332,54 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
 
     public void OnReleased(KeyBindingReleaseEvent<PlatformAction> e) { }
 
-    public void FlipSelection()
+    private bool getSelectedObjects(out List<HitObject> objects, bool copy = false)
     {
-        var objects = BlueprintContainer.SelectionHandler.SelectedObjects.OfType<HitObject>().ToList();
+        objects = BlueprintContainer.SelectionHandler.SelectedObjects.ToList();
 
-        if (!objects.Any())
+        if (objects.Count == 0)
         {
             notifications.SendSmallText("Nothing selected.", Phosphor.Bold.X);
-            return;
+            return false;
         }
+
+        if (copy)
+            objects = objects.Select(x => x.JsonCopy()).ToList();
+
+        return true;
+    }
+
+    public void FlipSelection()
+    {
+        if (!getSelectedObjects(out var objects))
+            return;
 
         ActionStack.Add(new NoteFlipAction(objects, Map.RealmMap.KeyCount));
     }
 
     public void ShuffleSelection()
     {
-        var objects = BlueprintContainer.SelectionHandler.SelectedObjects.OfType<HitObject>().ToList();
-
-        if (!objects.Any())
-        {
-            notifications.SendSmallText("Nothing selected.", Phosphor.Bold.X);
+        if (!getSelectedObjects(out var objects))
             return;
-        }
 
         ActionStack.Add(new NoteShuffleAction(objects, Map.RealmMap.KeyCount));
     }
 
+    public void ApplyGroupToSelection()
+    {
+        if (!getSelectedObjects(out var objects))
+            return;
+
+        panels?.Add(new FormPanel<EditorApplyGroup>(Phosphor.Bold.ShuffleAngular, "Apply Group to Selection", new EditorApplyGroup(), (_, group) =>
+        {
+            ActionStack.Add(new NoteApplyGroupAction(objects, group.Group));
+            return true;
+        }));
+    }
+
     public void CloneSelection()
     {
-        var objects = BlueprintContainer.SelectionHandler.SelectedObjects.OfType<HitObject>().ToList();
-
-        if (!objects.Any())
-        {
-            notifications.SendSmallText("Nothing selected.", Phosphor.Bold.X);
+        if (!getSelectedObjects(out var objects))
             return;
-        }
 
         var start = objects.MinBy(x => x.Time).Time;
         var end = objects.MaxBy(x => x.Time).Time;
@@ -412,7 +433,7 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
 
     public void ReSnapAll()
     {
-        var objects = BlueprintContainer.SelectionHandler.SelectedObjects.OfType<HitObject>().ToList();
+        var objects = BlueprintContainer.SelectionHandler.SelectedObjects.ToList();
 
         if (!objects.Any())
             objects = HitObjects.Select(h => h.Data).ToList();
@@ -422,13 +443,8 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
 
     public void Copy(bool deleteAfter = false)
     {
-        var hits = BlueprintContainer.SelectionHandler.SelectedObjects.OfType<HitObject>().Select(h => h.JsonCopy()).ToList();
-
-        if (!hits.Any())
-        {
-            notifications.SendSmallText("Nothing selected.", Phosphor.Bold.X);
+        if (!getSelectedObjects(out var hits, true))
             return;
-        }
 
         var minTime = hits.Min(x => x.Time);
 
