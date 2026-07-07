@@ -17,9 +17,9 @@ public partial class LaneSwitchAlert : Container
     private FluXisConfig config { get; set; }
 
     [Resolved]
-    private RulesetContainer ruleset { get; set; }
+    private RulesetData rulesetData { get; set; }
 
-    private IList<LaneSwitchEvent> events => ruleset.MapEvents.LaneSwitchEvents;
+    private IList<LaneSwitchEvent> events => rulesetData.MapEvents.LaneSwitchEvents;
 
     private SpriteIcon leftIcon;
     private SpriteIcon rightIcon;
@@ -88,7 +88,7 @@ public partial class LaneSwitchAlert : Container
 
             if (current.Count != last.Count)
             {
-                var timing = ruleset.MapInfo.GetTimingPoint(current.Time);
+                var timing = rulesetData.MapInfo.GetTimingPoint(current.Time);
                 var beat = timing.MsPerBeat;
                 var fade = beat / 2f;
 

@@ -12,7 +12,7 @@ namespace fluXis.Screens.Gameplay.Ruleset.Playfields.UI;
 public partial class KeyOverlay : Container
 {
     [Resolved]
-    private RulesetContainer ruleset { get; set; }
+    private RulesetData rulesetData { get; set; }
 
     [Resolved]
     private Playfield playfield { get; set; }
@@ -37,11 +37,11 @@ public partial class KeyOverlay : Container
         Anchor = Anchor.BottomCentre;
         Origin = Anchor.BottomCentre;
 
-        var binds = ruleset.Input.Keys;
+        var binds = rulesetData.Input.Keys;
 
-        if (ruleset.Input.Dual)
+        if (rulesetData.Input.Dual)
         {
-            var half = ruleset.Input.Keys.Count / 2;
+            var half = rulesetData.Input.Keys.Count / 2;
             var start = half * playfield.Index;
             binds = binds.GetRange(start, half);
         }
@@ -59,7 +59,7 @@ public partial class KeyOverlay : Container
 
     protected override void Update()
     {
-        if (ruleset.AlwaysShowKeys)
+        if (rulesetData.AlwaysShowKeys)
             Alpha = 1;
         else if (keyCount != laneSwitchManager.CurrentCount)
         {

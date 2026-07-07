@@ -9,6 +9,7 @@ using fluXis.Graphics.UserInterface.Panel.Presets;
 using fluXis.Map.Structures;
 using fluXis.Online.API.Models.Maps;
 using fluXis.Overlay.Notifications;
+using fluXis.Scoring.Processing;
 using fluXis.Screens.Edit.Actions.Events;
 using fluXis.Screens.Edit.Actions.Notes;
 using fluXis.Screens.Edit.Actions.Notes.Shortcuts;
@@ -26,6 +27,7 @@ using fluXis.Screens.Edit.Tabs.Shared.Points;
 using fluXis.Screens.Edit.Tabs.Shared.Toolbox;
 using fluXis.Screens.Edit.UI.Panels;
 using fluXis.Screens.Gameplay.Audio.Hitsounds;
+using fluXis.Screens.Gameplay.Ruleset;
 using JetBrains.Annotations;
 using Midori.Utils;
 using osu.Framework.Allocation;
@@ -96,6 +98,10 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
 
     public bool SelectedAny => BlueprintContainer.SelectionHandler.SelectedObjects.Count != 0;
 
+    // necessary for playfield
+    private JudgementProcessor judgementProcessor;
+    private LaneSwitchManager laneSwitchManager;
+
     protected override void BeforeLoad()
     {
         Editor.ChartingContainer = this;
@@ -105,6 +111,13 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
         dependencies.Cache(this);
         dependencies.CacheAs<ITimePositionProvider>(Playfields[0]);
         dependencies.CacheAs(sidebar = new ChartingSidebar());
+
+        judgementProcessor = new JudgementProcessor();
+        dependencies.CacheAs(judgementProcessor);
+
+        laneSwitchManager = new LaneSwitchManager(Map.MapEvents.LaneSwitchEvents, Map.MapInfo.RealmEntry!.KeyCount, Map.MapInfo.NewLaneSwitchLayout, false);
+        LoadComponent(laneSwitchManager);
+        dependencies.CacheAs(laneSwitchManager);
     }
 
     protected override void LoadComplete()
@@ -131,12 +144,13 @@ public partial class ChartingContainer : EditorTabContainer, IKeyBindingHandler<
             Colour = Colour4.Black,
             Alpha = 0
         },
+        new Gameplay.Ruleset.Playfields.Playfield(0, 0) { AnimationX = 475, Clock = EditorClock },
         new GridContainer
         {
             RelativeSizeAxes = Axes.Both,
             Content = new[] { Playfields }
         },
-        BlueprintContainer = new ChartingBlueprintContainer { ChartingContainer = this }
+        BlueprintContainer = new ChartingBlueprintContainer { ChartingContainer = this },
     };
 
     protected override Drawable CreateLeftSide() => new EditorToolbox

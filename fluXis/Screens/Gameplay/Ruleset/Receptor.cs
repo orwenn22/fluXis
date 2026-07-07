@@ -13,7 +13,7 @@ public partial class Receptor : CompositeDrawable
     private ISkin skin { get; set; }
 
     [Resolved]
-    private RulesetContainer ruleset { get; set; }
+    private RulesetData rulesetData { get; set; }
 
     [Resolved]
     private Playfield playfield { get; set; }
@@ -85,7 +85,7 @@ public partial class Receptor : CompositeDrawable
         if (playfield.Index > 0)
             i += playfield.RealmMap.KeyCount;
 
-        isDown.Value = ruleset.Input.Pressed[i];
+        isDown.Value = rulesetData.Input.Pressed[i];
         Width = laneSwitchManager.WidthFor(idx + 1);
     }
 }

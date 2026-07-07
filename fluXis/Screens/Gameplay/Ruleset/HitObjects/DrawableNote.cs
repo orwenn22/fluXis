@@ -20,11 +20,7 @@ public partial class DrawableNote : DrawableHitObject
     {
         InternalChild = Skin.GetHitObject(VisualLane, ObjectManager.KeyCount).With(d => d.RelativeSizeAxes = Axes.X);
 
-        if (ObjectManager.UseSnapColors)
-        {
-            var child = InternalChild as ICanHaveSnapColor;
-            child?.ApplySnapColor(Column.GetSnapIndex(Data.Time), 0);
-        }
+        UpdateSnapColor();
     }
 
     protected override void CheckJudgement(bool byUser, double offset)
@@ -47,5 +43,14 @@ public partial class DrawableNote : DrawableHitObject
             return;
 
         UpdateJudgement(true);
+    }
+
+    public override void UpdateSnapColor()
+    {
+        if (ObjectManager.UseSnapColors)
+        {
+            var child = InternalChild as ICanHaveSnapColor;
+            child?.ApplySnapColor(Column.SnapIndices.GetSnapIndex(Data.Time), 0);
+        }
     }
 }

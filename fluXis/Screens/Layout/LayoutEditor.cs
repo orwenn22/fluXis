@@ -225,10 +225,10 @@ public partial class LayoutEditor : FluXisScreen, IHUDDependencyProvider, IKeyBi
                 var replay = auto.Generate();
                 var events = map.GetMapEvents();
 
-                Schedule(() => LoadComponentAsync(ruleset = new ReplayRulesetContainer(replay, map, events, new List<IMod> { new AutoPlayMod() })
-                {
-                    ParentClock = clock
-                }, c =>
+                ruleset = new ReplayRulesetContainer(replay, map, events, new List<IMod> { new AutoPlayMod() });
+                ruleset.RulesetData.ParentClock = clock;
+
+                Schedule(() => LoadComponentAsync(ruleset, c =>
                 {
                     rulesetWrapper.Add(c);
                     RulesetLoaded?.Invoke();
@@ -328,10 +328,10 @@ public partial class LayoutEditor : FluXisScreen, IHUDDependencyProvider, IKeyBi
     JudgementProcessor IHUDDependencyProvider.JudgementProcessor => ruleset.PlayfieldManager.Players[0].JudgementProcessor;
     HealthProcessor IHUDDependencyProvider.HealthProcessor => ruleset.PlayfieldManager.Players[0].HealthProcessor;
     ScoreProcessor IHUDDependencyProvider.ScoreProcessor => ruleset.PlayfieldManager.Players[0].ScoreProcessor;
-    HitWindows IHUDDependencyProvider.HitWindows => ruleset.HitWindows;
-    RealmMap IHUDDependencyProvider.RealmMap => ruleset.MapInfo.RealmEntry;
-    MapInfo IHUDDependencyProvider.MapInfo => ruleset.MapInfo;
-    float IHUDDependencyProvider.PlaybackRate => ruleset.Rate;
+    HitWindows IHUDDependencyProvider.HitWindows => ruleset.RulesetData.HitWindows;
+    RealmMap IHUDDependencyProvider.RealmMap => ruleset.RulesetData.MapInfo.RealmEntry;
+    MapInfo IHUDDependencyProvider.MapInfo => ruleset.RulesetData.MapInfo;
+    float IHUDDependencyProvider.PlaybackRate => ruleset.RulesetData.Rate;
     double IHUDDependencyProvider.CurrentTime => ruleset.CurrentTime;
 
     #endregion

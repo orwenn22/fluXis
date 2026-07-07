@@ -13,7 +13,7 @@ namespace fluXis.Screens.Gameplay.Ruleset.HitObjects;
 public partial class DrawableHitObject : CompositeDrawable
 {
     [Resolved]
-    protected RulesetContainer Ruleset { get; private set; }
+    protected RulesetData RulesetData { get; private set; }
 
     [Resolved]
     protected HitObjectManager ObjectManager { get; private set; }
@@ -49,7 +49,7 @@ public partial class DrawableHitObject : CompositeDrawable
     public FluXisGameplayKeybind Keybind { get; set; }
 
     public virtual bool CanBeRemoved => false;
-    public virtual HitWindows HitWindows => Ruleset.HitWindows;
+    public virtual HitWindows HitWindows => RulesetData.HitWindows;
 
     public bool Judged { get; private set; }
     public Action<DrawableHitObject, double> OnHit { get; set; }
@@ -66,9 +66,7 @@ public partial class DrawableHitObject : CompositeDrawable
         Origin = Anchor.BottomLeft;
         Masking = true;
 
-        var group = Data.ScrollGroup ?? Column.DefaultScrollGroup;
-        ScrollVelocityTime = group.PositionFromTime(Data.Time);
-        ScrollVelocityEndTime = group.PositionFromTime(Data.EndTime);
+        UpdateScrollVelocityTime();
     }
 
     protected override void LoadComplete()
@@ -119,6 +117,17 @@ public partial class DrawableHitObject : CompositeDrawable
     public void OnKill()
     {
         UpdateJudgement(false);
+    }
+
+    public void UpdateScrollVelocityTime()
+    {
+        var group = Data.ScrollGroup ?? Column.DefaultScrollGroup;
+        ScrollVelocityTime = group.PositionFromTime(Data.Time);
+        ScrollVelocityEndTime = group.PositionFromTime(Data.EndTime);
+    }
+
+    public virtual void UpdateSnapColor()
+    {
     }
 
     public virtual void OnPressed(FluXisGameplayKeybind key) { }

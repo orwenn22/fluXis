@@ -63,7 +63,7 @@ public partial class ReplayCapability : Component, IRulesetCapability, IEndingCa
 
     RulesetContainer IRulesetCapability.Create() => new ReplayRulesetContainer(Replay, Screen.Map, Screen.MapEvents, Screen.Mods) { CurrentPlayer = Replay.GetPlayer(users) };
     void IRulesetCapability.Modify(RulesetContainer ruleset) => ModifyRuleset((ReplayRulesetContainer)ruleset);
-    protected virtual void ModifyRuleset(ReplayRulesetContainer ruleset) => ruleset.AllowReverting = true;
+    protected virtual void ModifyRuleset(ReplayRulesetContainer ruleset) => ruleset.RulesetData.AllowReverting = true;
 
     UserActivity IUserActivityCapability.Create() => new UserActivity.WatchingReplay(Screen, Screen.RealmMap, Replay.GetPlayer(users));
 

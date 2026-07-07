@@ -18,7 +18,7 @@ public partial class HitObjectManager : Container<HitObjectColumn>
     private SkinManager skinManager { get; set; }
 
     [Resolved]
-    private RulesetContainer ruleset { get; set; }
+    private RulesetData rulesetData { get; set; }
 
     [Resolved]
     private Playfield playfield { get; set; }
@@ -29,7 +29,7 @@ public partial class HitObjectManager : Container<HitObjectColumn>
     [Resolved]
     private LaneSwitchManager laneSwitchManager { get; set; }
 
-    private GameplayInput input => ruleset.Input;
+    private GameplayInput input => rulesetData.Input;
 
     private Bindable<bool> useSnapColors;
     public bool UseSnapColors => useSnapColors.Value;
@@ -38,8 +38,8 @@ public partial class HitObjectManager : Container<HitObjectColumn>
     {
         get
         {
-            var speed = playfield.RealmMap.Settings.ScrollSpeed ?? ruleset.ScrollSpeed.Value;
-            return speed * (speed / (speed * ruleset.Rate));
+            var speed = playfield.RealmMap.Settings.ScrollSpeed ?? rulesetData.ScrollSpeed.Value;
+            return speed * (speed / (speed * rulesetData.Rate));
         }
     }
 
@@ -76,10 +76,10 @@ public partial class HitObjectManager : Container<HitObjectColumn>
                                                {
                                                    var lane = i + 1;
 
-                                                   if (ruleset.MapInfo.IsSplit)
+                                                   if (rulesetData.MapInfo.IsSplit)
                                                        lane += KeyCount * playfield.Index;
 
-                                                   return new HitObjectColumn(ruleset.MapInfo, ruleset, this, lane);
+                                                   return new HitObjectColumn(rulesetData.MapInfo, rulesetData, this, lane);
                                                });
 
         useSnapColors = config.GetBindable<bool>(FluXisSetting.SnapColoring);
@@ -140,7 +140,7 @@ public partial class HitObjectManager : Container<HitObjectColumn>
 
     public Easing EasingAtTime(double time)
     {
-        var events = ruleset.MapEvents.HitObjectEaseEvents;
+        var events = rulesetData.MapEvents.HitObjectEaseEvents;
 
         if (events.Count == 0)
             return Easing.None;
@@ -199,7 +199,7 @@ public partial class HitObjectManager : Container<HitObjectColumn>
 
     public void PlayHitSound(HitObject hitObject, bool userTriggered = true)
     {
-        if (ruleset.CatchingUp || playfield.IsSubPlayfield)
+        if (rulesetData.CatchingUp || playfield.IsSubPlayfield)
             return;
 
         // ignore hitsounds when the next is a
@@ -219,5 +219,15 @@ public partial class HitObjectManager : Container<HitObjectColumn>
 
         var channel = hitsounding.GetSample(sound, hitsounds.Value && !playfield.RealmMap.Settings.DisableHitSounds);
         channel?.Play();
+    }
+
+    public HitObjectColumn GetColumn(int index)
+    {
+        int baseIndex = playfield.Index * KeyCount + 1;
+        index -= baseIndex;
+
+        if (index >= InternalChildren.Count || index < 0) return null;
+
+        return (HitObjectColumn)InternalChildren[index];
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using fluXis.Map.Structures.Bases;
 using fluXis.Screens.Gameplay.Ruleset;
 using Newtonsoft.Json;
@@ -29,7 +28,6 @@ public class ScrollMultiplierEvent : IMapEvent, IHasDuration, IHasEasing, IHasGr
 
     public void Apply(ScrollGroup group)
     {
-        using (group.BeginAbsoluteSequence(Time))
-            group.TransformTo(nameof(group.ScrollMultiplier), Multiplier, Math.Max(Duration, 0), Easing);
+        group.AddScrollMultiplier(this);
     }
 }

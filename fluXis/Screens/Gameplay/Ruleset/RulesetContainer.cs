@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using fluXis.Audio.Transforms;
 using fluXis.Map;
-using fluXis.Map.Structures.Bases;
 using fluXis.Mods;
 using fluXis.Online.API.Models.Users;
 using fluXis.Scoring;
@@ -11,9 +9,8 @@ using fluXis.Scoring.Processing.Health;
 using fluXis.Screens.Gameplay.Input;
 using fluXis.Screens.Gameplay.Ruleset.Playfields;
 using fluXis.Utils.Extensions;
+using JetBrains.Annotations;
 using osu.Framework.Allocation;
-using osu.Framework.Bindables;
-using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 
@@ -21,53 +18,53 @@ namespace fluXis.Screens.Gameplay.Ruleset;
 
 public partial class RulesetContainer : CompositeDrawable
 {
-    public MapInfo MapInfo { get; }
-    public MapEvents MapEvents { get; }
     public List<IMod> Mods { get; }
     public APIUser CurrentPlayer { get; init; }
-
-    public float Rate { get; }
-    public Bindable<float> ScrollSpeed { get; set; } = new(3);
-
-    public GameplayInput Input { get; }
-    public PlayfieldManager PlayfieldManager { get; }
+    public PlayfieldManager PlayfieldManager { get; set; }
 
     public virtual bool AsyncScoreCalculations => false;
-    public HitWindows HitWindows { get; private set; }
-    public ReleaseWindows ReleaseWindows { get; private set; }
-    public LandmineWindows LandmineWindows { get; private set; }
 
-    private readonly Dictionary<string, ScrollGroup> scrolls = new();
-    public IReadOnlyDictionary<string, ScrollGroup> ScrollGroups => scrolls;
+    [CanBeNull]
+    [Resolved(CanBeNull = true)]
+    private RulesetData resolvedRulesetData { get; set; }
+
+    public RulesetData RulesetData;
+    private readonly bool ownRulesetData;
 
     public event Action OnDeath;
 
-    public bool AllowReverting { get; set; }
-    public bool AlwaysShowKeys { get; set; }
-    public BindableBool IsPaused { get; } = new();
-
-    public bool CatchingUp { get; protected set; }
-    public TransformableClock ParentClock { get; set; }
-    public Drawable ShakeTarget { get; set; }
     public DebugText DebugText { get; }
 
     private DependencyContainer dependencies;
 
     protected override bool ForceChildUpdate => true;
 
-    public RulesetContainer(MapInfo map, MapEvents events, List<IMod> mods)
+    public RulesetContainer(List<IMod> mods)
     {
-        MapInfo = map;
-        MapEvents = events;
+        ownRulesetData = false;
         Mods = mods;
 
-        Rate = Mods.OfType<RateMod>().FirstOrDefault()?.Rate ?? 1;
+        // PlayfieldManager = new PlayfieldManager(RulesetData.MapInfo); // moved to load()
+        DebugText = new DebugText();
+    }
 
-        Input = CreateInput();
-        PlayfieldManager = new PlayfieldManager(MapInfo);
+    public RulesetContainer(MapInfo map, MapEvents events, List<IMod> mods)
+    {
+        ownRulesetData = true;
+        Mods = mods;
+
+        RulesetData = new RulesetData()
+        {
+            MapInfo = map,
+            MapEvents = events,
+        };
+        RulesetData.Rate = Mods.OfType<RateMod>().FirstOrDefault()?.Rate ?? 1;
+        RulesetData.Input = CreateInput();
+
+        PlayfieldManager = new PlayfieldManager(RulesetData.MapInfo);
         DebugText = new DebugText();
 
-        ShakeTarget ??= this;
+        RulesetData.ShakeTarget ??= this;
     }
 
     [BackgroundDependencyLoader]
@@ -77,24 +74,37 @@ public partial class RulesetContainer : CompositeDrawable
 
         dependencies.CacheAs(this);
 
+        if (ownRulesetData)
+        {
+            if (RulesetData == null) throw new Exception("Ruleset container is null");
+
+            LoadComponent(RulesetData);
+            dependencies.CacheAs(RulesetData);
+        }
+        else
+        {
+            if (resolvedRulesetData == null) throw new Exception("No RulesetData found in dependencies");
+
+            RulesetData = resolvedRulesetData;
+            PlayfieldManager = new PlayfieldManager(RulesetData.MapInfo);
+        }
+
         createHitWindows();
         createScrollGroups();
 
-        InternalChildrenEnumerable = new Drawable[]
-        {
-            dependencies.CacheAsAndReturn(Input),
-            PlayfieldManager,
-            DebugText
-        }.Concat(scrolls.Values.ToArray());
+        if (ownRulesetData) AddInternal(dependencies.CacheAsAndReturn(RulesetData.Input));
+        AddInternal(PlayfieldManager);
+        AddInternal(DebugText);
+        if (ownRulesetData) AddInternal(RulesetData);
     }
 
-    protected virtual GameplayInput CreateInput() => new(IsPaused.GetBoundCopy(), MapInfo.RealmEntry!.KeyCount, MapInfo.IsDual);
+    protected virtual GameplayInput CreateInput() => new(RulesetData.IsPaused.GetBoundCopy(), RulesetData.MapInfo.RealmEntry!.KeyCount, RulesetData.MapInfo.IsDual);
 
     public HealthProcessor CreateHealthProcessor()
     {
         var processor = null as HealthProcessor;
 
-        var difficulty = Math.Clamp(MapInfo.HealthDifficulty == 0 ? 8 : MapInfo.HealthDifficulty, 1, 10);
+        var difficulty = Math.Clamp(RulesetData.MapInfo.HealthDifficulty == 0 ? 8 : RulesetData.MapInfo.HealthDifficulty, 1, 10);
         difficulty *= Mods.Any(m => m is HardMod) ? 1.2f : 1f;
 
         if (Mods.Any(m => m is HardMod)) processor = new DrainHealthProcessor(difficulty);
@@ -111,55 +121,20 @@ public partial class RulesetContainer : CompositeDrawable
         return processor;
     }
 
+    //TODO: move this to RulesetData?
     private void createHitWindows()
     {
-        var difficulty = Math.Clamp(MapInfo.AccuracyDifficulty == 0 ? 8 : MapInfo.AccuracyDifficulty, 1, 10);
+        var difficulty = Math.Clamp(RulesetData.MapInfo.AccuracyDifficulty == 0 ? 8 : RulesetData.MapInfo.AccuracyDifficulty, 1, 10);
         difficulty *= Mods.Any(m => m is HardMod) ? 1.5f : 1;
 
-        HitWindows = new HitWindows(difficulty, Rate);
-        ReleaseWindows = new ReleaseWindows(difficulty, Rate);
-        LandmineWindows = new LandmineWindows(difficulty, Rate);
+        RulesetData.HitWindows = new HitWindows(difficulty, RulesetData.Rate);
+        RulesetData.ReleaseWindows = new ReleaseWindows(difficulty, RulesetData.Rate);
+        RulesetData.LandmineWindows = new LandmineWindows(difficulty, RulesetData.Rate);
     }
 
     private void createScrollGroups()
     {
-        // creating groups
-        for (int i = 0; i < MapInfo.RealmEntry!.KeyCount; i++)
-            scrolls[$"${i + 1}"] = new ScrollGroup { Name = $"${i + 1}" };
-
-        var events = MapInfo.ScrollVelocities.Cast<IHasGroups>().Concat(MapEvents.ScrollMultiplyEvents).Concat(MapInfo.AdditiveVelocities).ToList();
-        var groups = events.SelectMany(x => x.Groups).Distinct().Order().ToList();
-
-        foreach (var group in groups)
-        {
-            if (group.StartsWith('$'))
-                continue;
-
-            if (!scrolls.ContainsKey(group))
-                scrolls[group] = new ScrollGroup { Name = group };
-        }
-
-        scrolls.ForEach(x => LoadComponent(x.Value));
-
-        // populating groups
-        foreach (var ev in events)
-        {
-            if (ev.Groups.Count == 0)
-            {
-                foreach (var (_, group) in scrolls.Where(x => x.Key.StartsWith('$')))
-                    ev.Apply(group);
-            }
-            else
-            {
-                foreach (var group in ev.Groups)
-                {
-                    if (scrolls.TryGetValue(group, out var scroll))
-                        ev.Apply(scroll);
-                }
-            }
-        }
-
-        scrolls.ForEach(x => x.Value.InitMarkers());
+        RulesetData.CreateScrollGroups();
     }
 
     protected override IReadOnlyDependencyContainer CreateChildDependencies(IReadOnlyDependencyContainer parent) => dependencies = new DependencyContainer(base.CreateChildDependencies(parent));

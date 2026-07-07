@@ -24,6 +24,9 @@ public partial class PlayfieldPlayer : CompositeDrawable, IHUDDependencyProvider
     [Resolved]
     private RulesetContainer ruleset { get; set; }
 
+    [Resolved]
+    private RulesetData rulesetData { get; set; }
+
     public Playfield MainPlayfield { get; }
     public Playfield[] SubPlayfields { get; }
 
@@ -53,13 +56,16 @@ public partial class PlayfieldPlayer : CompositeDrawable, IHUDDependencyProvider
             ScoreProcessor = new ScoreProcessor(x => Schedule(x), ruleset.AsyncScoreCalculations)
             {
                 Player = ruleset.CurrentPlayer ?? APIUser.Default,
-                HitWindows = ruleset.HitWindows,
-                MapInfo = ruleset.MapInfo,
+                HitWindows = rulesetData.HitWindows,
+                MapInfo = rulesetData.MapInfo,
                 Mods = ruleset.Mods
             }
         });
 
-        AddInternal(dependencies.CacheAsAndReturn(new LaneSwitchManager(ruleset.MapEvents.LaneSwitchEvents, ruleset.MapInfo.RealmEntry!.KeyCount, ruleset.MapInfo.NewLaneSwitchLayout, ruleset.Mods.Any(x => x is MirrorMod))));
+        dependencies.CacheAs(JudgementProcessor);
+        dependencies.CacheAs(HealthProcessor);
+
+        AddInternal(dependencies.CacheAsAndReturn(new LaneSwitchManager(rulesetData.MapEvents.LaneSwitchEvents, rulesetData.MapInfo.RealmEntry!.KeyCount, rulesetData.MapInfo.NewLaneSwitchLayout, ruleset.Mods.Any(x => x is MirrorMod))));
 
         var content = new SortingContainer { RelativeSizeAxes = Axes.Both };
         content.Child = MainPlayfield;
@@ -71,11 +77,11 @@ public partial class PlayfieldPlayer : CompositeDrawable, IHUDDependencyProvider
     {
         base.LoadComplete();
 
-        JudgementProcessor.ApplyMap(ruleset.MapInfo);
+        JudgementProcessor.ApplyMap(rulesetData.MapInfo);
         HealthProcessor.OnSavedDeath += () => samples?.EarlyFail();
         ScoreProcessor.OnComboBreak += () =>
         {
-            if (ruleset.CatchingUp)
+            if (rulesetData.CatchingUp)
                 return;
 
             samples?.Miss();
@@ -115,10 +121,10 @@ public partial class PlayfieldPlayer : CompositeDrawable, IHUDDependencyProvider
 
     #region IHUDDependencyProvider
 
-    HitWindows IHUDDependencyProvider.HitWindows => ruleset.HitWindows;
-    RealmMap IHUDDependencyProvider.RealmMap => ruleset.MapInfo.RealmEntry;
-    MapInfo IHUDDependencyProvider.MapInfo => ruleset.MapInfo;
-    float IHUDDependencyProvider.PlaybackRate => ruleset.Rate;
+    HitWindows IHUDDependencyProvider.HitWindows => rulesetData.HitWindows;
+    RealmMap IHUDDependencyProvider.RealmMap => rulesetData.MapInfo.RealmEntry;
+    MapInfo IHUDDependencyProvider.MapInfo => rulesetData.MapInfo;
+    float IHUDDependencyProvider.PlaybackRate => rulesetData.Rate;
     double IHUDDependencyProvider.CurrentTime => ruleset.Time.Current;
 
     #endregion

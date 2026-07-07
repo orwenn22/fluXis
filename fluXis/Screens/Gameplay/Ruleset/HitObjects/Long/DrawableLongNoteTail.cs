@@ -8,7 +8,7 @@ namespace fluXis.Screens.Gameplay.Ruleset.HitObjects.Long;
 public partial class DrawableLongNoteTail : DrawableLongNotePart
 {
     protected override double HitTime => Data.EndTime;
-    protected override HitWindows HitWindows => Ruleset.ReleaseWindows;
+    protected override HitWindows HitWindows => RulesetData.ReleaseWindows;
 
     public DrawableLongNoteTail(HitObject data)
         : base(data)

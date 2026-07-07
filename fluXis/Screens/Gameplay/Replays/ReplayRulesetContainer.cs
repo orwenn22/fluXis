@@ -16,31 +16,30 @@ public partial class ReplayRulesetContainer : RulesetContainer, IFrameBasedClock
 {
     public override bool AsyncScoreCalculations => true;
 
-    public Replay Replay { get; }
+    public Replay Replay { get; private set; }
     public bool RequireSyncFrames { get; set; } = false;
 
-    private List<ReplayFrame> frames { get; }
+    private List<ReplayFrame> frames { get; set; }
     private Stack<ReplayFrame> handledFrames { get; }
     private List<FluXisGameplayKeybind> currentPressed = new();
 
     public double CurrentTime { get; private set; }
     public double ElapsedFrameTime { get; private set; }
-    public double FramesPerSecond => ParentClock.FramesPerSecond;
-    public bool IsRunning => ParentClock.IsRunning;
+    public double FramesPerSecond => RulesetData.ParentClock.FramesPerSecond;
+    public bool IsRunning => RulesetData.ParentClock.IsRunning;
 
-    double IClock.Rate => ParentClock.Rate;
+    double IClock.Rate => RulesetData.ParentClock.Rate;
 
     double IAdjustableClock.Rate
     {
-        get => ParentClock.Rate;
-        set => ParentClock.Rate = value;
+        get => RulesetData.ParentClock.Rate;
+        set => RulesetData.ParentClock.Rate = value;
     }
 
-    public ReplayRulesetContainer(Replay replay, MapInfo map, MapEvents events, List<IMod> mods)
-        : base(map, events, mods)
+    public ReplayRulesetContainer(Replay replay, List<IMod> mods)
+        : base(mods)
     {
         Replay = replay;
-        AllowReverting = true;
 
         frames = replay.Frames;
         handledFrames = new Stack<ReplayFrame>();
@@ -49,16 +48,29 @@ public partial class ReplayRulesetContainer : RulesetContainer, IFrameBasedClock
         CurrentTime = -4000;
     }
 
-    protected override GameplayInput CreateInput() => new ReplayInput(IsPaused.GetBoundCopy(), MapInfo.RealmEntry!.KeyCount, MapInfo.IsDual);
+    public ReplayRulesetContainer(Replay replay, MapInfo map, MapEvents events, List<IMod> mods)
+        : base(map, events, mods)
+    {
+        Replay = replay;
+        RulesetData.AllowReverting = true;
+
+        frames = replay.Frames;
+        handledFrames = new Stack<ReplayFrame>();
+
+        Clock = this;
+        CurrentTime = -4000;
+    }
+
+    protected override GameplayInput CreateInput() => new ReplayInput(RulesetData.IsPaused.GetBoundCopy(), RulesetData.MapInfo.RealmEntry!.KeyCount, RulesetData.MapInfo.IsDual);
 
     private int skippedFrames = 0;
     private double skipElapsed = 0;
 
     public override bool UpdateSubTree()
     {
-        var target = ParentClock.CurrentTime;
+        var target = RulesetData.ParentClock.CurrentTime;
         ElapsedFrameTime = target - CurrentTime;
-        CatchingUp = Math.Abs(ElapsedFrameTime) > 20;
+        RulesetData.CatchingUp = Math.Abs(ElapsedFrameTime) > 20;
 
         if (target > CurrentTime)
         {
@@ -86,17 +98,17 @@ public partial class ReplayRulesetContainer : RulesetContainer, IFrameBasedClock
             if (target > Replay.LastSync)
             {
                 reset();
-                ParentClock.Stop();
+                RulesetData.ParentClock.Stop();
                 return base.UpdateSubTree();
             }
 
-            if (!ParentClock.IsRunning)
-                ParentClock.Start();
+            if (!RulesetData.ParentClock.IsRunning)
+                RulesetData.ParentClock.Start();
         }
 
         CurrentTime = target;
 
-        if (Math.Abs(ParentClock.CurrentTime - CurrentTime) > 40 && skippedFrames < 100 && skipElapsed < 10)
+        if (Math.Abs(RulesetData.ParentClock.CurrentTime - CurrentTime) > 40 && skippedFrames < 100 && skipElapsed < 10)
         {
             skippedFrames++;
 
@@ -158,7 +170,7 @@ public partial class ReplayRulesetContainer : RulesetContainer, IFrameBasedClock
             case ReplayFrameType.Input:
             {
                 foreach (var keybind in currentPressed)
-                    Input.ReleaseKey(keybind);
+                    RulesetData.Input.ReleaseKey(keybind);
 
                 currentPressed.Clear();
                 break;
@@ -177,7 +189,7 @@ public partial class ReplayRulesetContainer : RulesetContainer, IFrameBasedClock
             if (currentPressed.Contains(keybind))
                 continue;
 
-            Input.PressKey(keybind);
+            RulesetData.Input.PressKey(keybind);
         }
 
         foreach (var keybind in currentPressed)
@@ -185,17 +197,38 @@ public partial class ReplayRulesetContainer : RulesetContainer, IFrameBasedClock
             if (frameActions.Contains(keybind))
                 continue;
 
-            Input.ReleaseKey(keybind);
+            RulesetData.Input.ReleaseKey(keybind);
         }
 
         currentPressed = frameActions;
     }
 
-    public void Reset() => ParentClock.Reset();
-    public void Start() => ParentClock.Start();
-    public void Stop() => ParentClock.Stop();
-    public bool Seek(double position) => ParentClock.Seek(position);
-    public void ResetSpeedAdjustments() => ParentClock.ResetSpeedAdjustments();
+    public void ReplaceReplay(Replay replay)
+    {
+        handledFrames.Clear();
+
+        RulesetData.CatchingUp = true; // prevents hit sounds from being played
+        Replay = replay;
+        frames = Replay.Frames;
+
+        if (frames.Count >= 0)
+        {
+            while (frames.Count > 0 && frames[0].Time <= Clock.CurrentTime)
+            {
+                var frame = frames[0];
+                frames.RemoveAt(0);
+                handledFrames.Push(frame);
+
+                // no need to handle presses past the current time
+            }
+        }
+    }
+
+    public void Reset() => RulesetData.ParentClock.Reset();
+    public void Start() => RulesetData.ParentClock.Start();
+    public void Stop() => RulesetData.ParentClock.Stop();
+    public bool Seek(double position) => RulesetData.ParentClock.Seek(position);
+    public void ResetSpeedAdjustments() => RulesetData.ParentClock.ResetSpeedAdjustments();
 
     public void ProcessFrame() { }
 }

@@ -31,7 +31,7 @@ public partial class KeysPerSecondDisplay : GameplayHUDComponent
     protected override void LoadComplete()
     {
         base.LoadComplete();
-        Ruleset.Input.OnPress += onPress;
+        Ruleset.RulesetData.Input.OnPress += onPress;
     }
 
     protected override void Update()
@@ -45,7 +45,7 @@ public partial class KeysPerSecondDisplay : GameplayHUDComponent
     protected override void Dispose(bool isDisposing)
     {
         base.Dispose(isDisposing);
-        Ruleset.Input.OnPress -= onPress;
+        Ruleset.RulesetData.Input.OnPress -= onPress;
     }
 
     private void onPress(FluXisGameplayKeybind _) => times.Add(Clock.CurrentTime);

@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using fluXis.Configuration;
 using fluXis.Graphics.Background;
 using fluXis.Graphics.Containers;
 using fluXis.Graphics.Shaders;
 using fluXis.Graphics.Sprites;
+using fluXis.Map.Structures;
 using fluXis.Map.Structures.Bases;
 using fluXis.Map.Structures.Events;
 using fluXis.Map.Structures.Events.Camera;
+using fluXis.Map.Structures.Events.Scrolling;
 using fluXis.Mods;
 using fluXis.Replays;
 using fluXis.Screens.Edit.Tabs.Design.Effects;
@@ -22,9 +23,9 @@ using fluXis.Screens.Gameplay.Ruleset;
 using fluXis.Scripting;
 using fluXis.Storyboards;
 using fluXis.Utils;
+using JetBrains.Annotations;
 using Midori.Utils;
 using osu.Framework.Allocation;
-using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
@@ -46,7 +47,13 @@ public partial class DesignContainer : EditorTabContainer
         typeof(PulseEvent),
         typeof(ShaderEvent),
         typeof(NoteEvent),
-        typeof(StoryboardElement)
+        typeof(StoryboardElement),
+
+        // these are handled by RulesetData  TODO: don't make it necessary to regsiter these here
+        typeof(HitObject),
+        typeof(ScrollVelocity),
+        typeof(ScrollMultiplierEvent),
+        typeof(AdditiveVelocity),
     };
 
     private DrawSizePreservingFillContainer drawSizePreserve;
@@ -62,18 +69,12 @@ public partial class DesignContainer : EditorTabContainer
     private EditorFlashLayer backFlash;
     private EditorFlashLayer frontFlash;
 
+    [CanBeNull]
+    private RulesetContainer ruleset;
+
     private IdleTracker rulesetIdleTracker;
 
-    private Bindable<float> userScrollSpeed;
-    private Bindable<float> rulesetScrollSpeed { get; } = new();
-
     private BackgroundVideo backgroundVideo;
-
-    [BackgroundDependencyLoader]
-    private void load(FluXisConfig config)
-    {
-        userScrollSpeed = config.GetBindable<float>(FluXisSetting.ScrollSpeed);
-    }
 
     protected override IEnumerable<Drawable> CreateContent()
     {
@@ -157,6 +158,10 @@ public partial class DesignContainer : EditorTabContainer
         registerCameraUpdate<CameraScaleEvent>();
         registerCameraUpdate<CameraRotateEvent>();
 
+        Map.RegisterAddListener<HitObject>(_ => updateReplay());
+        Map.RegisterUpdateListener<HitObject>(_ => updateReplay());
+        Map.RegisterRemoveListener<HitObject>(_ => updateReplay());
+
         Editor.BindableBackgroundDim.BindValueChanged(e => backgroundDim.FadeTo(e.NewValue, 300));
         Editor.BindableBackgroundBlur.BindValueChanged(e => backgroundStack.Add(new BlurableBackground(Map.RealmMap, e.NewValue)), true);
 
@@ -166,13 +171,6 @@ public partial class DesignContainer : EditorTabContainer
             Map.RegisterUpdateListener<T>(_ => rebuildCamera());
             Map.RegisterRemoveListener<T>(_ => rebuildCamera());
         }
-    }
-
-    protected override void Update()
-    {
-        base.Update();
-
-        rulesetScrollSpeed.Value = (float)(userScrollSpeed.Value * (Settings.Zoom / 2f));
     }
 
     private RulesetContainer createRuleset()
@@ -185,9 +183,7 @@ public partial class DesignContainer : EditorTabContainer
         frontFlash.Rebuild(effects.FlashEvents.Where(x => !x.InBackground).ToList());
 
         var auto = new AutoGenerator(Map.MapInfo, Map.RealmMap.KeyCount);
-        var container = new ReplayRulesetContainer(auto.Generate(), Map.MapInfo, effects, new List<IMod> { new NoFailMod() });
-        container.ScrollSpeed = rulesetScrollSpeed;
-        container.ParentClock = EditorClock;
+        var container = new ReplayRulesetContainer(auto.Generate(), new List<IMod> { new NoFailMod() });
         return container;
     }
 
@@ -254,8 +250,9 @@ public partial class DesignContainer : EditorTabContainer
     private void rebuildRuleset()
     {
         rulesetWrapper.Clear();
+        ruleset = null;
 
-        var ruleset = createRuleset();
+        ruleset = createRuleset();
         rulesetWrapper.Child = ruleset;
         ruleset.FadeInFromZero(100);
 
@@ -273,6 +270,15 @@ public partial class DesignContainer : EditorTabContainer
 
             default:
                 return base.OnKeyDown(e);
+        }
+    }
+
+    private void updateReplay()
+    {
+        if (ruleset is ReplayRulesetContainer replayRulesetContainer)
+        {
+            var auto = new AutoGenerator(Map.MapInfo, Map.RealmMap.KeyCount);
+            replayRulesetContainer.ReplaceReplay(auto.Generate());
         }
     }
 

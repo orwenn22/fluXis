@@ -10,7 +10,7 @@ namespace fluXis.Screens.Gameplay.Ruleset.HitObjects;
 
 public partial class DrawableLandmine : DrawableHitObject
 {
-    public override HitWindows HitWindows => Ruleset.LandmineWindows;
+    public override HitWindows HitWindows => RulesetData.LandmineWindows;
 
     public override bool CanBeRemoved => Judged || didNotGetHit;
 
@@ -111,7 +111,7 @@ public partial class DrawableLandmine : DrawableHitObject
 
         while (next != null)
         {
-            if (next.Time - Data.Time > Ruleset.HitWindows.TimingFor(Judgement.Okay)) return null; // no need to keep going if the next note is too far away
+            if (next.Time - Data.Time > RulesetData.HitWindows.TimingFor(Judgement.Okay)) return null; // no need to keep going if the next note is too far away
             if (next.Type != HitObjectType.Landmine) return next;
 
             next = next.NextObject;

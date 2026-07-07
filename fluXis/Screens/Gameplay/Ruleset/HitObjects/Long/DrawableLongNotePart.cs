@@ -19,7 +19,7 @@ public partial class DrawableLongNotePart : CompositeDrawable
 
     protected bool Missed => Time.Current > HitTime + HitWindows.TimingFor(HitWindows.Lowest);
     protected virtual double HitTime => Data.Time;
-    protected virtual HitWindows HitWindows => Ruleset.HitWindows;
+    protected virtual HitWindows HitWindows => RulesetData.HitWindows;
 
     public bool Judged { get; private set; }
 
@@ -30,7 +30,7 @@ public partial class DrawableLongNotePart : CompositeDrawable
     protected ISkin Skin { get; private set; }
 
     [Resolved]
-    protected RulesetContainer Ruleset { get; private set; }
+    protected RulesetData RulesetData { get; private set; }
 
     protected int VisualLane
     {

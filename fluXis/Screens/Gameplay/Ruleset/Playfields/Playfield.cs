@@ -26,7 +26,7 @@ public partial class Playfield : Container
     private ISkin skin { get; set; }
 
     [Resolved]
-    private RulesetContainer ruleset { get; set; }
+    private RulesetData rulesetData { get; set; }
 
     [Resolved]
     private Hitsounding hitsounding { get; set; }
@@ -55,8 +55,8 @@ public partial class Playfield : Container
     public ColorManager ColorManager { get; private set; }
     public float HUDAlpha { get; set; } = 1f;
 
-    public MapInfo MapInfo => ruleset.MapInfo;
-    public MapEvents MapEvents => ruleset.MapEvents;
+    public MapInfo MapInfo => rulesetData.MapInfo;
+    public MapEvents MapEvents => rulesetData.MapEvents;
     public RealmMap RealmMap => MapInfo.RealmEntry!;
 
     private DependencyContainer dependencies;
@@ -142,7 +142,7 @@ public partial class Playfield : Container
                 }
             },
             new KeyOverlay(),
-            new EventHandler<ShakeEvent>(MapEvents.ShakeEvents, shake => ruleset.ShakeTarget.Shake(Math.Max(shake.Duration, 0), shake.Magnitude))
+            new EventHandler<ShakeEvent>(MapEvents.ShakeEvents, shake => rulesetData.ShakeTarget.Shake(Math.Max(shake.Duration, 0), shake.Magnitude))
         };
 
         MapEvents.ColorFadeEvents.ForEach(e => e.Apply(this));

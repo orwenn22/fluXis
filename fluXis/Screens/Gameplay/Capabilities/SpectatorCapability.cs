@@ -31,7 +31,7 @@ public partial class SpectatorCapability : ReplayCapability
 
     protected override void ModifyRuleset(ReplayRulesetContainer ruleset)
     {
-        ruleset.AllowReverting = false;
+        ruleset.RulesetData.AllowReverting = false;
         ruleset.RequireSyncFrames = true;
     }
 

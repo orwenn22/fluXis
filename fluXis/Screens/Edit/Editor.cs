@@ -37,6 +37,7 @@ using fluXis.Online.Fluxel;
 using fluXis.Overlay.Notifications;
 using fluXis.Overlay.Notifications.Tasks;
 using fluXis.Overlay.Wiki;
+using fluXis.Scoring;
 using fluXis.Screens.Edit.Actions;
 using fluXis.Screens.Edit.Input;
 using fluXis.Screens.Edit.Modding;
@@ -53,6 +54,9 @@ using fluXis.Screens.Edit.UI.TabSwitcher;
 using fluXis.Screens.Edit.Windows;
 using fluXis.Screens.Edit.UI.Variable.Timing;
 using fluXis.Screens.Gameplay.Audio.Hitsounds;
+using fluXis.Screens.Gameplay.Input;
+using fluXis.Screens.Gameplay.Replays;
+using fluXis.Screens.Gameplay.Ruleset;
 using fluXis.Scripting;
 using fluXis.Skinning.Default;
 using fluXis.Storyboards;
@@ -158,6 +162,10 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     private WindowContainer windowContainer;
     private Dictionary<string, EditorTool> editorTools = new();
 
+    private RulesetData rulesetData;
+    private Bindable<float> userScrollSpeed;
+    private Bindable<float> rulesetScrollSpeed { get; } = new();
+
     public bool HasUnsavedChanges
     {
         get
@@ -198,6 +206,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
     [BackgroundDependencyLoader]
     private void load(AudioManager audioManager, GameHost host, FluXisConfig config, ExperimentConfigManager experiments)
     {
+        userScrollSpeed = config.GetBindable<float>(FluXisSetting.ScrollSpeed);
         BindableBackgroundDim = config.GetBindable<float>(FluXisSetting.EditorDim);
         BindableBackgroundBlur = config.GetBindable<float>(FluXisSetting.EditorBlur);
 
@@ -277,8 +286,32 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
 
         dependencies.CacheAs(windowContainer = new WindowContainer { Scale = new Vector2(0.85f, 0.85f) });
 
+        var difficulty = Math.Clamp(EditorMap.MapInfo.AccuracyDifficulty == 0 ? 8 : EditorMap.MapInfo.AccuracyDifficulty, 1, 10);
+        rulesetData = new RulesetData
+        {
+            MapInfo = EditorMap.MapInfo,
+            MapEvents = EditorMap.MapEvents,
+            Clock = EditorClock,
+            ParentClock = EditorClock,
+            AllowReverting = true,
+            HitWindows = new HitWindows(difficulty, 1),
+            ReleaseWindows = new ReleaseWindows(difficulty, 1),
+            LandmineWindows = new LandmineWindows(difficulty, 1),
+            ShakeTarget = Empty(), //idk lmao
+            ScrollSpeed = rulesetScrollSpeed,
+        };
+        LoadComponent(rulesetData);
+        rulesetData.CreateScrollGroups();
+        rulesetData.RegisterEditorMapListeners(EditorMap);
+        dependencies.CacheAs(rulesetData);
+
+        rulesetData.Input = new ReplayInput(rulesetData.IsPaused.GetBoundCopy(), rulesetData.MapInfo.RealmEntry!.KeyCount, rulesetData.MapInfo.IsDual);
+        rulesetData.Input.Clock = EditorClock;
+        dependencies.CacheAs<GameplayInput>(rulesetData.Input);
+
         InternalChild = keybinds.WithChildren(new Drawable[]
         {
+            rulesetData,
             lowPass = new AudioFilter(audioManager.TrackMixer),
             highPass = new AudioFilter(audioManager.TrackMixer, BQFType.HighPass),
             EditorClock,
@@ -563,6 +596,8 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
             var now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             if (now - lastSaveTime > 1000 * 60 * 5) save();
         }
+
+        rulesetScrollSpeed.Value = (float)(userScrollSpeed.Value * (settings.Zoom / 2f));
     }
 
     protected override void Dispose(bool isDisposing)

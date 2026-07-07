@@ -52,17 +52,7 @@ public partial class DrawableLongNote : DrawableHitObject
             headPiece = new DrawableLongNoteHead(Data)
         };
 
-        if (ObjectManager.UseSnapColors)
-        {
-            var startIdx = Column.GetSnapIndex(Data.Time);
-            var endIdx = Column.GetSnapIndex(Data.EndTime);
-
-            if (bodyPiece is ICanHaveSnapColor colorable)
-                colorable.ApplySnapColor(startIdx, endIdx);
-
-            tailPiece.ApplySnapColor(endIdx);
-            headPiece.ApplySnapColor(startIdx);
-        }
+        UpdateSnapColor();
     }
 
     protected override void LoadComplete()
@@ -71,7 +61,7 @@ public partial class DrawableLongNote : DrawableHitObject
         headPiece.OnMiss += () => tailPiece.UpdateJudgement(false);
         tailPiece.OnJudgement += diff =>
         {
-            var judgement = Ruleset.ReleaseWindows.JudgementFor(diff);
+            var judgement = RulesetData.ReleaseWindows.JudgementFor(diff);
 
             if (judgement == Judgement.Alright)
                 miss();
@@ -128,5 +118,20 @@ public partial class DrawableLongNote : DrawableHitObject
             return;
 
         IsBeingHeld.Value = false;
+    }
+
+    public override void UpdateSnapColor()
+    {
+        if (ObjectManager.UseSnapColors)
+        {
+            var startIdx = Column.SnapIndices.GetSnapIndex(Data.Time);
+            var endIdx = Column.SnapIndices.GetSnapIndex(Data.EndTime);
+
+            if (bodyPiece is ICanHaveSnapColor colorable)
+                colorable.ApplySnapColor(startIdx, endIdx);
+
+            tailPiece.ApplySnapColor(endIdx);
+            headPiece.ApplySnapColor(startIdx);
+        }
     }
 }

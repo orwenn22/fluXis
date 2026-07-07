@@ -22,11 +22,13 @@ public class NoteMoveAction : EditorAction
     public override void Run(EditorMap map)
     {
         Apply(newPos, false);
+        foreach (var hitObject in infos) map.Update(hitObject);
     }
 
     public override void Undo(EditorMap map)
     {
         Apply(originalPos, false);
+        foreach (var hitObject in infos) map.Update(hitObject);
     }
 
     public void Apply(Vector2d[] vecs, bool update)

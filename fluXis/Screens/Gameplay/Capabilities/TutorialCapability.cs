@@ -42,5 +42,5 @@ public class TutorialCapability : IEndingCapability, IRulesetCapability
         return null;
     }
 
-    void IRulesetCapability.Modify(RulesetContainer ruleset) => ruleset.AlwaysShowKeys = true;
+    void IRulesetCapability.Modify(RulesetContainer ruleset) => ruleset.RulesetData.AlwaysShowKeys = true;
 }

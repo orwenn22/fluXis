@@ -253,14 +253,14 @@ public sealed partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<Fl
             new FlashOverlay(MapEvents.FlashEvents.Where(e => e.InBackground).ToList()),
             RulesetContainer = createRuleset().With(x =>
             {
-                x.ScrollSpeed = new Bindable<float>(Config.Get<float>(FluXisSetting.ScrollSpeed));
+                x.RulesetData.ScrollSpeed = new Bindable<float>(Config.Get<float>(FluXisSetting.ScrollSpeed));
             }),
             ReplayRecorder = new ReplayRecorder()
         }.Concat(transforms), UseGlobalOffset);
 
-        RulesetContainer.ParentClock = clockContainer.GameplayClock;
-        RulesetContainer.IsPaused.BindTo(IsPaused);
-        RulesetContainer.ShakeTarget = this;
+        RulesetContainer.RulesetData.ParentClock = clockContainer.GameplayClock;
+        RulesetContainer.RulesetData.IsPaused.BindTo(IsPaused);
+        RulesetContainer.RulesetData.ShakeTarget = this;
         RulesetContainer.OnDeath += onDeath;
 
         dependencies.Cache(PlayfieldManager = RulesetContainer.PlayfieldManager);
@@ -347,7 +347,7 @@ public sealed partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<Fl
                     failMenu = new FailMenu(),
                     fcOverlay = new FullComboOverlay(),
                     quickActionOverlay = new QuickActionOverlay(),
-                    new GameplayTouchInput(RulesetContainer.Input),
+                    new GameplayTouchInput(RulesetContainer.RulesetData.Input),
                     new PauseMenu()
                 },
             },
@@ -358,8 +358,8 @@ public sealed partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<Fl
 
         backgroundVideo.LoadVideo(Map);
 
-        RulesetContainer.Input.OnPress += ReplayRecorder.PressKey;
-        RulesetContainer.Input.OnRelease += ReplayRecorder.ReleaseKey;
+        RulesetContainer.RulesetData.Input.OnPress += ReplayRecorder.PressKey;
+        RulesetContainer.RulesetData.Input.OnRelease += ReplayRecorder.ReleaseKey;
 
         capabilities.ForEach(x => x.PostLoad());
     }
