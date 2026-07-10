@@ -30,6 +30,7 @@ public partial class OnlineNavigator : IconEntranceOverlay, IKeyBindingHandler<F
     protected override float OverlayPadding => 32;
     protected override ColourInfo BackgroundColor => Theme.Background1;
     protected override IconUsage Icon => Phosphor.Bold.Compass;
+    protected override float MaxWidth => 1536;
 
     public const float HEADER_HEIGHT = 36;
 
@@ -103,27 +104,33 @@ public partial class OnlineNavigator : IconEntranceOverlay, IKeyBindingHandler<F
         current.Value?.FadeOut(Styling.TRANSITION_FADE);
         current.Value = page;
 
-        this.Delay(Styling.TRANSITION_FADE).Then().OnComplete(_ =>
+        Scheduler.AddDelayed(() => LoadComponentAsync(page, p =>
         {
-            LoadComponentAsync(page, p =>
+            if (!pages.Contains(p))
             {
-                if (!pages.Contains(p))
-                {
-                    p.Dispose();
-                    return;
-                }
+                p.Dispose();
+                return;
+            }
 
-                content.Clear(false);
-                content.Add(p);
+            content.Clear(false);
+            content.Add(p);
 
-                var bg = p.CreateBackground();
-                if (bg is not null) background.Add(bg);
+            var bg = p.CreateBackground();
+            if (bg is not null) background.Add(bg);
 
-                p.FadeInFromZero(Styling.TRANSITION_FADE);
-                loading.Hide();
-                locked = false;
-            });
-        });
+            p.FadeInFromZero(Styling.TRANSITION_FADE);
+            loading.Hide();
+            locked = false;
+        }), Styling.TRANSITION_ENTER_DELAY * 2);
+    }
+
+    public void Refresh()
+    {
+        if (locked || current.Value is null)
+            return;
+
+        locked = true;
+        current.Value?.Refresh(() => locked = false);
     }
 
     public void Pop()
@@ -143,7 +150,9 @@ public partial class OnlineNavigator : IconEntranceOverlay, IKeyBindingHandler<F
         var prev = pages.Peek();
 
         background.ForEach(x => x.FadeOut(Styling.TRANSITION_FADE).Expire());
-        current.Value?.FadeOut(Styling.TRANSITION_FADE).Then().OnComplete(_ =>
+        current.Value?.FadeOut(Styling.TRANSITION_FADE);
+
+        Scheduler.AddDelayed(() =>
         {
             content.Clear(true);
             content.Add(prev);
@@ -154,7 +163,7 @@ public partial class OnlineNavigator : IconEntranceOverlay, IKeyBindingHandler<F
             prev.FadeInFromZero(Styling.TRANSITION_FADE);
             current.Value = prev;
             locked = false;
-        });
+        }, Styling.TRANSITION_ENTER_DELAY * 2);
     }
 
     private void reset()
@@ -172,6 +181,12 @@ public partial class OnlineNavigator : IconEntranceOverlay, IKeyBindingHandler<F
         reset();
         base.PopIn();
         scroll.ScrollTo(0, false);
+    }
+
+    protected override void PopOut()
+    {
+        locked = false;
+        base.PopOut();
     }
 
     public bool OnPressed(KeyBindingPressEvent<FluXisGlobalKeybind> e)
