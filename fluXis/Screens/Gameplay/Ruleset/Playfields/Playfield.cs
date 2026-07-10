@@ -14,6 +14,7 @@ using fluXis.Screens.Gameplay.Ruleset.TimingLines;
 using fluXis.Skinning;
 using fluXis.Skinning.Default;
 using fluXis.Utils.Extensions;
+using JetBrains.Annotations;
 using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.IEnumerableExtensions;
@@ -28,6 +29,10 @@ public partial class Playfield : Container
 {
     [Resolved]
     private ISkin skin { get; set; }
+
+    [CanBeNull]
+    [Resolved(CanBeNull = true)]
+    private RulesetContainer ruleset { get; set; }
 
     [Resolved]
     private RulesetData rulesetData { get; set; }
@@ -163,7 +168,7 @@ public partial class Playfield : Container
         var props = typeof(T).GetAnimatedProperties();
         initial.ForEach(x => x.Apply(this));
 
-        ruleset.RegisterReload<T>(objs =>
+        ruleset?.RegisterReload<T>(objs =>
         {
             props.ForEach(x => ClearTransforms(false, x));
             objs.ForEach(x => x.Apply(this));
