@@ -139,12 +139,14 @@ public partial class VibratoWindow : Window
                             new EditorVariableNumber<double>
                             {
                                 Text = "Up multiplier start",
+                                Formatting = "0.0000",
                                 CurrentValue = vibratoParams.UpMultiplierStart,
                                 OnValueChanged = v => vibratoParams.UpMultiplierStart = v,
                             },
                             new EditorVariableNumber<double>
                             {
                                 Text = "Up multiplier end",
+                                Formatting = "0.0000",
                                 CurrentValue = vibratoParams.UpMultiplierEnd,
                                 OnValueChanged = v => vibratoParams.UpMultiplierEnd = v,
                             },
@@ -158,12 +160,14 @@ public partial class VibratoWindow : Window
                             new EditorVariableNumber<double>
                             {
                                 Text = "Down multiplier start",
+                                Formatting = "0.0000",
                                 CurrentValue = vibratoParams.DownMultiplierStart,
                                 OnValueChanged = v => vibratoParams.DownMultiplierStart = v,
                             },
                             new EditorVariableNumber<double>
                             {
                                 Text = "Down multiplier end",
+                                Formatting = "0.0000",
                                 CurrentValue = vibratoParams.DownMultiplierEnd,
                                 OnValueChanged = v => vibratoParams.DownMultiplierEnd = v,
                             },
