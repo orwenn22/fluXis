@@ -98,7 +98,7 @@ public partial class SvEasingWindow : Window
                 new EditorVariableNumber<double>
                 {
                     Text = "Start multiplier",
-                    Formatting = "0.0000",
+                    Formatting = "0.00000000000",
                     CurrentValue = svEasingParams.StartMultiplier,
                     OnValueChanged = v =>
                     {
@@ -109,7 +109,7 @@ public partial class SvEasingWindow : Window
                 new EditorVariableNumber<double>
                 {
                     Text = "End multiplier",
-                    Formatting = "0.0000",
+                    Formatting = "0.00000000000",
                     CurrentValue = svEasingParams.EndMultiplier,
                     OnValueChanged = v =>
                     {

@@ -32,10 +32,18 @@ public partial class SingleNoteSelectionBlueprint : NoteSelectionBlueprint
 
     protected override bool OnMouseDown(MouseDownEvent e)
     {
-        if (Object.Type != HitObjectType.Tick || e.Button != MouseButton.Middle)
+        if (e.Button != MouseButton.Middle)
             return false;
 
-        Object.HoldTime = Object.HoldTime > 0 ? 0 : 1;
+        if (Object.Type == HitObjectType.Tick)
+        {
+            Object.HoldTime = Object.HoldTime > 0 ? 0 : 1;
+        }
+        else if (Object.Type == HitObjectType.Landmine)
+        {
+            Object.Hidden = !Object.Hidden;
+        }
+
         return true;
     }
 }
