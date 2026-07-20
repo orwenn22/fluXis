@@ -35,21 +35,25 @@ public partial class TimingTagContainer : EditorTagContainer
         Map.RegisterRemoveListener<TimingPoint>(RemoveTag);
         Map.RegisterAddRangeListener<TimingPoint>(addTimingPointRange);
         Map.RegisterClearListener<TimingPoint>(ClearTags<TimingPoint>);
+        Map.RegisterUpdateListener<TimingPoint>(UpdateTag);
 
         Map.RegisterAddListener<ScrollVelocity>(addScrollVelocity);
         Map.RegisterRemoveListener<ScrollVelocity>(RemoveTag);
         Map.RegisterAddRangeListener<ScrollVelocity>(addScrollVelocityRange);
         Map.RegisterClearListener<ScrollVelocity>(ClearTags<ScrollVelocity>);
+        Map.RegisterUpdateListener<TimingPoint>(UpdateTag);
 
         Map.RegisterAddListener<AdditiveVelocity>(addAdditiveVelocity);
         Map.RegisterRemoveListener<AdditiveVelocity>(RemoveTag);
         Map.RegisterAddRangeListener<AdditiveVelocity>(addAdditiveVelocityRange);
         Map.RegisterClearListener<AdditiveVelocity>(ClearTags<AdditiveVelocity>);
+        Map.RegisterUpdateListener<TimingPoint>(UpdateTag);
 
         Map.RegisterAddListener<ScrollMultiplierEvent>(addScrollMultiplier);
         Map.RegisterRemoveListener<ScrollMultiplierEvent>(RemoveTag);
         Map.RegisterAddRangeListener<ScrollMultiplierEvent>(addScrollMultiplierRange);
         Map.RegisterClearListener<ScrollMultiplierEvent>(ClearTags<ScrollMultiplierEvent>);
+        Map.RegisterUpdateListener<TimingPoint>(UpdateTag);
 
         selectionHandler.SelectedObjects.CollectionChanged += (_, _) => updateSelection();
     }

@@ -20,11 +20,16 @@ public partial class EditorTagContainer : Container<EditorTag>
     [Resolved]
     protected EditorClock EditorClock { get; private set; }
 
-    protected List<EditorTag> Tags { get; } = new();
+    // protected List<EditorTag> Tags { get; } = new();
+    protected List<EditorTag> PastTags { get; } = new();
+    protected List<EditorTag> FutureTags { get; } = new();
+
     protected virtual bool RightSide => false;
 
-    private bool needsSort = false;
-    private EditorTag[] sortedChildrenCache;
+    private List<EditorTag> sortedChildrenCache = new();
+
+    private static readonly IComparer<EditorTag> timeComparer =
+        Comparer<EditorTag>.Create((a, b) => a.TimedObject.Time.CompareTo(b.TimedObject.Time));
 
     public delegate bool HighlightFileter(EditorTag tag);
 
@@ -50,20 +55,41 @@ public partial class EditorTagContainer : Container<EditorTag>
     protected void AddTag(EditorTag tag)
     {
         tag.RightSide = RightSide;
-        Tags.Add(tag);
+
+        if (tag.TimedObject.Time < EditorClock.CurrentTime - 1000)
+        {
+            int index = PastTags.BinarySearch(tag, timeComparer);
+            if (index < 0) index = ~index;
+
+            PastTags.Insert(index, tag);
+        }
+        else
+        {
+            int index = FutureTags.BinarySearch(tag, timeComparer);
+            if (index < 0) index = ~index;
+
+            FutureTags.Insert(index, tag);
+        }
+
+        // TODO: the tag might be visible when inserted
+        //       currently, adding a tag will cause the list to be out of order
+
         setTagAlpha(tag);
     }
 
     protected void RemoveTag(ITimedObject obj)
     {
-        var tag = Tags.FirstOrDefault(t => t.TimedObject == obj);
+        var tag = PastTags.FirstOrDefault(t => t.TimedObject == obj);
+        tag ??= FutureTags.FirstOrDefault(t => t.TimedObject == obj);
         tag ??= Children.FirstOrDefault(t => t.TimedObject == obj);
 
         if (tag == null) return;
 
-        Tags.Remove(tag);
+        // TODO: only remove from correct one?
+        FutureTags.Remove(tag);
+        PastTags.Remove(tag);
+        sortedChildrenCache.Remove(tag);
         Remove(tag, true);
-        needsSort = true;
     }
 
     protected void ClearTags<T>()
@@ -72,11 +98,29 @@ public partial class EditorTagContainer : Container<EditorTag>
         foreach (var tag in tags)
             Remove(tag, true);
 
-        tags = Tags.Where(t => t.TimedObject is T).ToList();
+        tags = PastTags.Where(t => t.TimedObject is T).ToList();
         foreach (var tag in tags)
-            Tags.Remove(tag);
+            PastTags.Remove(tag);
 
-        needsSort = true;
+        tags = FutureTags.Where(t => t.TimedObject is T).ToList();
+        foreach (var tag in tags)
+            FutureTags.Remove(tag);
+    }
+
+    protected void UpdateTag(ITimedObject obj)
+    {
+        var tag = PastTags.FirstOrDefault(t => t.TimedObject == obj);
+        tag ??= FutureTags.FirstOrDefault(t => t.TimedObject == obj);
+        tag ??= Children.FirstOrDefault(t => t.TimedObject == obj);
+
+        if (tag == null)
+            return; // throw?
+
+        // TODO: only remove from correct one?
+        FutureTags.Remove(tag);
+        PastTags.Remove(tag);
+        Remove(tag, false);
+        AddTag(tag);
     }
 
     protected override void Update()
@@ -87,25 +131,57 @@ public partial class EditorTagContainer : Container<EditorTag>
 
         foreach (var tag in tagsToHide)
         {
-            Tags.Add(tag);
+            if (tag.TimedObject.Time < EditorClock.CurrentTime - 1000)
+            {
+                int index = PastTags.BinarySearch(tag, timeComparer);
+                if (index < 0) index = ~index;
+
+                PastTags.Insert(index, tag);
+            }
+            else
+            {
+                int index = FutureTags.BinarySearch(tag, timeComparer);
+                if (index < 0) index = ~index;
+
+                FutureTags.Insert(index, tag);
+            }
+
             Remove(tag, false);
-            needsSort = true;
+            sortedChildrenCache.Remove(tag);
         }
 
-        var tagsToDisplay = Tags.Where(t => t.TimedObject.Time < EditorClock.CurrentTime + 1000 && t.TimedObject.Time > EditorClock.CurrentTime - 1000).ToList();
-
-        foreach (var tag in tagsToDisplay)
+        // handling past tags
+        while (PastTags.Count > 0 && PastTags[^1].TimedObject.Time > EditorClock.CurrentTime - 1000)
         {
-            Tags.Remove(tag);
-            Add(tag);
-            setTagAlpha(tag);
-            needsSort = true;
+            var tag = PastTags[^1];
+            PastTags.RemoveAt(PastTags.Count - 1);
+
+            if (tag.TimedObject.Time > EditorClock.CurrentTime + 1000)
+            {
+                FutureTags.Insert(0, tag);
+            }
+            else
+            {
+                Add(tag);
+                sortedChildrenCache.Insert(0, tag);
+            }
         }
 
-        if (needsSort || sortedChildrenCache == null)
+        // handling future tags
+        while (FutureTags.Count > 0 && FutureTags[0].TimedObject.Time < EditorClock.CurrentTime + 1000)
         {
-            sortedChildrenCache = Children.OrderBy(tag => (int)tag.TimedObject.Time).ToArray();
-            needsSort = false;
+            var tag = FutureTags[0];
+            FutureTags.RemoveAt(0);
+
+            if (tag.TimedObject.Time < EditorClock.CurrentTime - 1000)
+            {
+                PastTags.Add(tag);
+            }
+            else
+            {
+                Add(tag);
+                sortedChildrenCache.Add(tag);
+            }
         }
 
         var tagsAtTime = new Dictionary<int, int>();
@@ -151,7 +227,10 @@ public partial class EditorTagContainer : Container<EditorTag>
         foreach (var tag in Children)
             setTagAlpha(tag);
 
-        foreach (var tag in Tags)
+        foreach (var tag in PastTags)
+            setTagAlpha(tag);
+
+        foreach (var tag in FutureTags)
             setTagAlpha(tag);
 
         if (highlightFilter == null)
