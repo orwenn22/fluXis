@@ -46,6 +46,29 @@ public partial class ColorableSkinDrawable : CompositeDrawable
         SetColor(SkinJson?.GetLaneColor(lane, keyCount) ?? Colour4.White);
     });
 
+    // taiko impl
+    public void UpdateColor(bool isPrimary) => Schedule(() =>
+    {
+        if (ColorProvider != null && ColorProvider.HasColorFor(isPrimary, out var color))
+        {
+            SetColor(color);
+            return;
+        }
+
+        SetColor(isPrimary ? Colour4.Red : Colour4.Blue);
+    });
+
+    public void UpdateColorMiddle() => Schedule(() =>
+    {
+        if (ColorProvider != null && ColorProvider.HasMiddleColor(out var color))
+        {
+            SetColor(color);
+            return;
+        }
+
+        SetColor(Colour4.White);
+    });
+
     public virtual void SetColor(Colour4 color) { }
     public virtual void UpdateColor(MapColor index, Colour4 color) => SetColor(color);
 

@@ -330,7 +330,7 @@ public sealed partial class GameplayScreen : FluXisScreen, IKeyBindingHandler<Fl
         Container pulseContainer;
 
         AddRangeInternal([
-            keybindContainer = new GameplayKeybindContainer(realm, RealmMap.KeyCount, Map.IsDual)
+            keybindContainer = new GameplayKeybindContainer(realm, RealmMap.KeyCount, Map.IsDual, true)
             {
                 Anchor = Anchor.Centre,
                 Origin = Anchor.Centre,

@@ -49,7 +49,6 @@ public partial class HitObjectColumn : Container<DrawableHitObject>
 
     public MapInfo Map { get; }
     public HitObjectManager HitManager { get; }
-    public int Lane { get; }
 
     private static int[] snaps { get; } = { 48, 24, 16, 12, 8, 6, 4, 3 };
     private Dictionary<int, int> snapIndices { get; } = new();
@@ -59,20 +58,17 @@ public partial class HitObjectColumn : Container<DrawableHitObject>
     private JudgementProcessor judgementProcessor => player.JudgementProcessor;
     private DependencyContainer dependencies;
 
-    public HitObjectColumn(MapInfo map, RulesetContainer ruleset, HitObjectManager hitManager, int lane)
+    public HitObjectColumn(MapInfo map, RulesetContainer ruleset, HitObjectManager hitManager)
     {
         Map = map;
-        Lane = lane;
         HitManager = hitManager;
 
-        var idx = Lane;
+        // if (map.IsSplit && idx > map.RealmEntry!.KeyCount)
+        //     idx -= map.RealmEntry!.KeyCount;
 
-        if (map.IsSplit && idx > map.RealmEntry!.KeyCount)
-            idx -= map.RealmEntry!.KeyCount;
+        DefaultScrollGroup = ruleset.ScrollGroups[$"$1"];
 
-        DefaultScrollGroup = ruleset.ScrollGroups[$"${idx}"];
-
-        var objects = Map.HitObjects.Where(h => h.Lane == Lane).ToList();
+        var objects = Map.HitObjects.ToList();
         objects.Sort((a, b) => a.Time.CompareTo(b.Time));
         objects.ForEach(FutureHitObjects.Add);
 
@@ -163,7 +159,7 @@ public partial class HitObjectColumn : Container<DrawableHitObject>
         return float.IsFinite(y) ? y : 0;
     }
 
-    public bool IsFirst(DrawableHitObject hitObject) => HitObjects.FirstOrDefault(h => h.Data.Lane == hitObject.Data.Lane && h.Data.Time < hitObject.Data.Time) == null;
+    public bool IsFirst(DrawableHitObject hitObject) => HitObjects.FirstOrDefault(h => h.Data.Time < hitObject.Data.Time) == null;
 
     public int GetSnapIndex(double time)
     {

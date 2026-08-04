@@ -42,6 +42,9 @@ public class SkinJson
     [JsonProperty("10k")]
     public SkinKeymode TenKey { get; set; } = new() { ColumnWidth = 78 };
 
+    [JsonProperty("taiko")]
+    public SkinTaiko Taiko { get; set; } = new();
+
     [JsonProperty("judgements")]
     public SkinJudgements Judgements { get; set; } = new();
 

@@ -45,6 +45,13 @@ public class DefaultCircleSkin : DefaultSkin
         return piece;
     }
 
+    public override Drawable GetTaikoHitObject(bool isPrimary)
+    {
+        var piece = new DefaultCircleHitObjectPiece(SkinJson, isPrimary ? MapColor.Primary : MapColor.Secondary);
+        piece.UpdateColor(isPrimary);
+        return piece;
+    }
+
     public override Drawable GetLongNoteStart(int lane, int keyCount) => GetHitObject(lane, keyCount);
 
     public override Drawable GetLongNoteBody(int lane, int keyCount)
@@ -79,7 +86,12 @@ public class DefaultCircleSkin : DefaultSkin
     }
 
     public override Drawable GetTickNote(int lane, int keyCount, bool small) => new DefaultCircleTickNote(small);
+
+    public override Drawable GetTaikoTickNote() => new DefaultCircleTickNote(false);
+
     public override Drawable GetLandmine(int lane, int keyCount) => new DefaultCircleLandmine();
+    public override Drawable GetTaikoLandmine() => new DefaultCircleLandmine();
+
     public override VisibilityContainer GetColumnLighting(int lane, int keyCount) => new DefaultCircleColumnLighting();
 
     public override Drawable GetReceptor(int lane, int keyCount, bool down)
@@ -87,6 +99,20 @@ public class DefaultCircleSkin : DefaultSkin
         var index = Theme.GetLaneColorIndex(lane, keyCount);
         var receptor = down ? new DefaultCircleReceptorDown(SkinJson, (MapColor)index) : new DefaultCircleReceptorUp(SkinJson, (MapColor)index);
         receptor.UpdateColor(lane, keyCount);
+        return receptor;
+    }
+
+    public override Drawable GetTaikoReceptor()
+    {
+        var receptor = new DefaultCircleReceptorUp(SkinJson, MapColor.Middle);
+        receptor.UpdateColorMiddle();
+        return receptor;
+    }
+
+    public override Drawable GetTaikoReceptorDown(bool isPrimary)
+    {
+        var receptor = new DefaultCircleReceptorDown(SkinJson, isPrimary ? MapColor.Primary : MapColor.Secondary);
+        receptor.UpdateColor(isPrimary);
         return receptor;
     }
 

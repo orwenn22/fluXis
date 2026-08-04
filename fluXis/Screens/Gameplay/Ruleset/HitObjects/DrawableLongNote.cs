@@ -11,6 +11,15 @@ namespace fluXis.Screens.Gameplay.Ruleset.HitObjects;
 
 public partial class DrawableLongNote : DrawableHitObject
 {
+    public bool IsPrimary
+    {
+        get
+        {
+            int lane = (Data.Lane - 1) % 4;
+            return lane == 1 || lane == 2;
+        }
+    }
+
     public override bool CanBeRemoved
     {
         get
@@ -113,7 +122,7 @@ public partial class DrawableLongNote : DrawableHitObject
 
     public override void OnPressed(FluXisGameplayKeybind key)
     {
-        if (key != Keybind || !Column.IsFirst(this))
+        if (!correctKey(key) || !Column.IsFirst(this))
             return;
 
         if (!headPiece.Hittable || missed)
@@ -124,9 +133,15 @@ public partial class DrawableLongNote : DrawableHitObject
 
     public override void OnReleased(FluXisGameplayKeybind key)
     {
-        if (key != Keybind)
+        if (!correctKey(key))
             return;
 
         IsBeingHeld.Value = false;
+    }
+
+    private bool correctKey(FluXisGameplayKeybind key)
+    {
+        return (IsPrimary && (key == FluXisGameplayKeybind.KeyTaiko2 || key == FluXisGameplayKeybind.KeyTaiko3))
+               || (!IsPrimary && (key == FluXisGameplayKeybind.KeyTaiko1 || key == FluXisGameplayKeybind.KeyTaiko4));
     }
 }

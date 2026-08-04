@@ -18,40 +18,29 @@ public partial class Receptor : CompositeDrawable
     [Resolved]
     private Playfield playfield { get; set; }
 
-    [Resolved]
-    private LaneSwitchManager laneSwitchManager { get; set; }
-
     public override bool RemoveCompletedTransforms => true;
 
-    private readonly int idx;
-
     private Drawable up;
-    private Drawable down;
-    private VisibilityContainer hitLighting;
+    private Drawable downPrimary;
+    private Drawable downSecondary;
 
-    private BindableBool isDown { get; } = new();
-
-    public Receptor(int idx)
-    {
-        this.idx = idx;
-    }
+    private BindableInt lastKeyPress { get; } = new(); // 0: nothing, 1: primary, 2: secondary
 
     [BackgroundDependencyLoader]
     private void load()
     {
-        RelativeSizeAxes = Axes.Y;
+        Width = skin.SkinJson.Taiko.ColumnWidth;
+        Height = skin.SkinJson.Taiko.ColumnWidth;
+        // AutoSizeAxes = Axes.Y;
+        Anchor = Anchor.BottomCentre;
+        Origin = Anchor.BottomCentre;
         Masking = true;
 
         InternalChildren = new[]
         {
-            up = skin.GetReceptor(idx + 1, playfield.RealmMap.KeyCount, false),
-            down = skin.GetReceptor(idx + 1, playfield.RealmMap.KeyCount, true),
-            hitLighting = skin.GetColumnLighting(idx + 1, playfield.RealmMap.KeyCount).With(l => l.AlwaysPresent = true)
-        };
-
-        hitLighting.Margin = new MarginPadding
-        {
-            Bottom = skin.SkinJson.GetKeymode(playfield.RealmMap.KeyCount).HitPosition
+            up = skin.GetTaikoReceptor(),
+            downPrimary = skin.GetTaikoReceptorDown(true),
+            downSecondary = skin.GetTaikoReceptorDown(false),
         };
     }
 
@@ -59,19 +48,25 @@ public partial class Receptor : CompositeDrawable
     {
         base.LoadComplete();
 
-        isDown.BindValueChanged(v =>
+        lastKeyPress.BindValueChanged(v =>
         {
-            if (v.NewValue)
-            {
-                up.Hide();
-                down.Show();
-                hitLighting.Show();
-            }
-            else
+            if (v.NewValue == 0)
             {
                 up.Show();
-                down.Hide();
-                hitLighting.Hide();
+                downPrimary.Hide();
+                downSecondary.Hide();
+            }
+            else if (v.NewValue == 1)
+            {
+                up.Hide();
+                downPrimary.Show();
+                downSecondary.Hide();
+            }
+            else if (v.NewValue == 2)
+            {
+                up.Hide();
+                downPrimary.Hide();
+                downSecondary.Show();
             }
         }, true);
 
@@ -80,12 +75,19 @@ public partial class Receptor : CompositeDrawable
 
     protected override void Update()
     {
-        var i = idx;
+        int baseKeyIndex = playfield.Index * 4;
 
-        if (playfield.Index > 0)
-            i += playfield.RealmMap.KeyCount;
+        bool allReleased = true;
 
-        isDown.Value = ruleset.Input.Pressed[i];
-        Width = laneSwitchManager.WidthFor(idx + 1);
+        for (int keyIndex = 0; keyIndex < 4; keyIndex++)
+        {
+            if (!ruleset.Input.Pressed[baseKeyIndex + keyIndex]) continue;
+
+            allReleased = false;
+            if (keyIndex == 1 || keyIndex == 2) lastKeyPress.Value = 1;
+            else lastKeyPress.Value = 2;
+        }
+
+        if (allReleased) lastKeyPress.Value = 0;
     }
 }

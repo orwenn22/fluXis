@@ -22,11 +22,12 @@ public class HitWindows
 
     protected virtual Timing[] CreateTimings(float difficulty, float multiplier) => new Timing[]
     {
-        new(Judgement.Flawless, difficulty, multiplier, 22, 19, 13),
+        // TODO: find a way to fully get rid of unused jusgements
+        new(Judgement.Flawless, difficulty, multiplier, 63, 48, 33),
         new(Judgement.Perfect, difficulty, multiplier, 64, 49, 34),
-        new(Judgement.Great, difficulty, multiplier, 97, 82, 67),
+        new(Judgement.Great, difficulty, multiplier, 126, 111, 96),
         new(Judgement.Alright, difficulty, multiplier, 127, 112, 97),
-        new(Judgement.Okay, difficulty, multiplier, 151, 136, 121),
+        new(Judgement.Okay, difficulty, multiplier, 128, 113, 98),
         new(Judgement.Miss, difficulty, multiplier, 188, 173, 158)
     };
 

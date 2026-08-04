@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using fluXis.Configuration;
 using fluXis.Database.Maps;
 using fluXis.Map;
@@ -19,7 +18,6 @@ using osu.Framework.Bindables;
 using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Utils;
 using osuTK;
 
 namespace fluXis.Screens.Gameplay.Ruleset.Playfields;
@@ -34,9 +32,6 @@ public partial class Playfield : Container
 
     [Resolved]
     private Hitsounding hitsounding { get; set; }
-
-    [Resolved]
-    private LaneSwitchManager laneSwitchManager { get; set; }
 
     public int Index { get; }
     public int SubIndex { get; }
@@ -54,7 +49,7 @@ public partial class Playfield : Container
     }
 
     public Stage Stage { get; private set; }
-    public FillFlowContainer<Receptor> Receptors { get; private set; }
+    public Container<Receptor> Receptors { get; private set; }
     public HitObjectManager HitManager { get; private set; }
     public ColorManager ColorManager { get; private set; }
     public float HUDAlpha { get; set; } = 1f;
@@ -65,7 +60,6 @@ public partial class Playfield : Container
 
     private DependencyContainer dependencies;
 
-    private Drawable hitline;
     private Drawable topCover;
     private Drawable bottomCover;
 
@@ -97,15 +91,14 @@ public partial class Playfield : Container
         scrollDirection = config.GetBindable<ScrollDirection>(FluXisSetting.ScrollDirection);
         hitsoundPanStrength = config.GetBindable<double>(FluXisSetting.HitsoundPanning);
 
-        Receptors = new FillFlowContainer<Receptor>
+        Receptors = new Container<Receptor>
         {
             AutoSizeAxes = Axes.X,
             RelativeSizeAxes = Axes.Y,
             Anchor = Anchor.Centre,
             Origin = Anchor.Centre,
-            Direction = FillDirection.Horizontal,
-            ChildrenEnumerable = Enumerable.Range(0, RealmMap.KeyCount).Select(i => new Receptor(i)),
-            Padding = new MarginPadding { Bottom = skin.SkinJson.GetKeymode(RealmMap.KeyCount).ReceptorOffset }
+            Child = new Receptor(),
+            Padding = new MarginPadding { Bottom = skin.SkinJson.Taiko.HitPosition }
         };
 
         dependencies.CacheAs(this);
@@ -126,13 +119,8 @@ public partial class Playfield : Container
             new LaneSwitchAlert(),
             Stage = new Stage(),
             new TimingLineManager(),
-            receptorsFirst ? Receptors : HitManager,
-            receptorsFirst ? HitManager : Receptors,
-            hitline = skin.GetHitLine().With(d =>
-            {
-                d.Width = 1;
-                d.RelativeSizeAxes = Axes.X;
-            }),
+            (Drawable)(receptorsFirst ? Receptors : HitManager),
+            (Drawable)(receptorsFirst ? HitManager : Receptors),
             new Container
             {
                 RelativeSizeAxes = Axes.Both,
@@ -145,7 +133,6 @@ public partial class Playfield : Container
                     bottomCover = skin.GetLaneCover(true)
                 }
             },
-            new KeyOverlay(),
             new EventHandler<ShakeEvent>(MapEvents.ShakeEvents, shake => ruleset.ShakeTarget.Shake(Math.Max(shake.Duration, 0), shake.Magnitude))
         };
 
@@ -173,11 +160,6 @@ public partial class Playfield : Container
     protected override void Update()
     {
         updatePositionScale();
-        var newReceptorOffset = laneSwitchManager.ReceptorOffset;
-
-        hitline.Y = -laneSwitchManager.HitPosition;
-        if (!Precision.AlmostEquals(newReceptorOffset, Receptors.Padding.Bottom))
-            Receptors.Padding = Receptors.Padding with { Bottom = newReceptorOffset };
 
         topCover.Y = (topCoverHeight.Value - 2f) / 2f;
         bottomCover.Y = (2f - bottomCoverHeight.Value) / 2f;

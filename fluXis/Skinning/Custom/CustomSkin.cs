@@ -192,6 +192,23 @@ public class CustomSkin : ISkin
         return drawable;
     }
 
+    public Drawable GetTaikoHitObject(bool isPrimary)
+    {
+        var path = SkinJson.GetOverrideOrDefault($"HitObjects/Taiko");
+        var main = path + ".png";
+        var tintless = path + "-tintless.png";
+
+        if (!storage.Exists(main))
+            return null;
+
+        MapColor index = isPrimary ? MapColor.Primary : MapColor.Secondary;
+
+        var drawable = new CustomTaikoHitObject(SkinJson, index, textures.Get(main), textures.Get(tintless));
+
+        drawable.UpdateColor(isPrimary);
+        return drawable;
+    }
+
     public Drawable GetTickNote(int lane, int keyCount, bool small)
     {
         var path = SkinJson.GetOverrideOrDefault($"HitObjects/Tick/{keyCount}k-{lane}{(small ? "-small" : "")}") + ".png";
@@ -211,9 +228,49 @@ public class CustomSkin : ISkin
         return null;
     }
 
+    public Drawable GetTaikoTickNote()
+    {
+        bool small = false; // just in case we add this as a param at some point
+
+        var path = SkinJson.GetOverrideOrDefault($"HitObjects/Tick/Taiko{(small ? "-small" : "")}") + ".png";
+
+        if (storage.Exists(path))
+        {
+            return new SkinnableSprite
+            {
+                Texture = textures.Get(path),
+                Anchor = Anchor.BottomCentre,
+                Origin = Anchor.BottomCentre,
+                RelativeSizeAxes = Axes.X,
+                Width = 1
+            };
+        }
+
+        return null;
+    }
+
     public Drawable GetLandmine(int lane, int keyCount)
     {
         var path = SkinJson.GetOverrideOrDefault($"HitObjects/Landmine/{keyCount}k-{lane}") + ".png";
+
+        if (storage.Exists(path))
+        {
+            return new SkinnableSprite
+            {
+                Texture = textures.Get(path),
+                Anchor = Anchor.BottomCentre,
+                Origin = Anchor.BottomCentre,
+                RelativeSizeAxes = Axes.X,
+                Width = 1
+            };
+        }
+
+        return null;
+    }
+
+    public Drawable GetTaikoLandmine()
+    {
+        var path = SkinJson.GetOverrideOrDefault($"HitObjects/Landmine/Taiko") + ".png";
 
         if (storage.Exists(path))
         {
@@ -319,6 +376,40 @@ public class CustomSkin : ISkin
         );
 
         drawable.UpdateColor(lane, keyCount);
+        return drawable;
+    }
+
+    public Drawable GetTaikoReceptor()
+    {
+        var path = SkinJson.GetOverrideOrDefault($"Receptor/Taiko");
+        var main = path + ".png";
+        var tintless = path + "-tintless.png";
+
+        if (!storage.Exists(main))
+            return null;
+
+        var drawable = new CustomTaikoReceptor(
+            SkinJson, textures.Get(main), textures.Get(tintless), MapColor.Middle
+        );
+
+        drawable.UpdateColorMiddle();
+        return drawable;
+    }
+
+    public Drawable GetTaikoReceptorDown(bool isPrimary)
+    {
+        var path = SkinJson.GetOverrideOrDefault($"Receptor/Taiko-down");
+        var main = path + ".png";
+        var tintless = path + "-tintless.png";
+
+        if (!storage.Exists(main))
+            return null;
+
+        var drawable = new CustomTaikoReceptor(
+            SkinJson, textures.Get(main), textures.Get(tintless), isPrimary ? MapColor.Primary : MapColor.Secondary
+        );
+
+        drawable.UpdateColor(isPrimary);
         return drawable;
     }
 

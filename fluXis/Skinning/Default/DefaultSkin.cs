@@ -13,6 +13,8 @@ using fluXis.Skinning.Default.Lighting;
 using fluXis.Skinning.Default.Receptor;
 using fluXis.Skinning.Default.Results;
 using fluXis.Skinning.Default.Stage;
+using fluXis.Skinning.DefaultCircle.HitObject;
+using fluXis.Skinning.DefaultCircle.Receptor;
 using fluXis.Skinning.Json;
 using fluXis.Storyboards;
 using osu.Framework.Audio.Sample;
@@ -125,9 +127,18 @@ public class DefaultSkin : ISkin
         return piece;
     }
 
+    public virtual Drawable GetTaikoHitObject(bool isPrimary)
+    {
+        var piece = new DefaultCircleHitObjectPiece(SkinJson, isPrimary ? MapColor.Primary : MapColor.Secondary);
+        piece.UpdateColor(isPrimary);
+        return piece;
+    }
+
     public virtual Drawable GetTickNote(int lane, int keyCount, bool small) => new DefaultTickNote(small);
+    public virtual Drawable GetTaikoTickNote() => new DefaultCircleTickNote(false);
 
     public virtual Drawable GetLandmine(int lane, int keyCount) => new DefaultLandmine();
+    public virtual Drawable GetTaikoLandmine() => new DefaultCircleLandmine();
 
     public virtual Drawable GetLongNoteStart(int lane, int keyCount) => GetHitObject(lane, keyCount);
 
@@ -160,6 +171,20 @@ public class DefaultSkin : ISkin
         var receptor = down ? new DefaultReceptorDown(SkinJson, (MapColor)index) : new DefaultReceptorUp(SkinJson, (MapColor)index);
         receptor.UpdateColor(lane, keyCount);
         receptor.Height = SkinJson.GetKeymode(keyCount).HitPosition;
+        return receptor;
+    }
+
+    public virtual Drawable GetTaikoReceptor()
+    {
+        var receptor = new DefaultCircleReceptorUp(SkinJson, MapColor.Middle);
+        receptor.UpdateColorMiddle();
+        return receptor;
+    }
+
+    public virtual Drawable GetTaikoReceptorDown(bool isPrimary)
+    {
+        var receptor = new DefaultCircleReceptorDown(SkinJson, isPrimary ? MapColor.Primary : MapColor.Secondary);
+        receptor.UpdateColor(isPrimary);
         return receptor;
     }
 

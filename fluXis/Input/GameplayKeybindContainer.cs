@@ -11,15 +11,33 @@ public partial class GameplayKeybindContainer : RealmKeyBindingContainer<FluXisG
 {
     public override IEnumerable<IKeyBinding> DefaultKeyBindings { get; }
 
-    public GameplayKeybindContainer(FluXisRealm realm, int keyCount, bool dual = false)
+    public GameplayKeybindContainer(FluXisRealm realm, int keyCount, bool dual = false, bool taiko = false)
         : base(realm, SimultaneousBindingMode.Unique)
     {
-        DefaultKeyBindings = getBindings(keyCount, dual);
+        DefaultKeyBindings = getBindings(keyCount, dual, taiko);
     }
 
-    private IEnumerable<KeyBinding> getBindings(int mode, bool dual)
+    private IEnumerable<KeyBinding> getBindings(int mode, bool dual, bool taiko)
     {
         var binds = new List<FluXisGameplayKeybind>();
+
+        if (taiko)
+        {
+            binds.Add(FluXisGameplayKeybind.KeyTaiko1);
+            binds.Add(FluXisGameplayKeybind.KeyTaiko2);
+            binds.Add(FluXisGameplayKeybind.KeyTaiko3);
+            binds.Add(FluXisGameplayKeybind.KeyTaiko4);
+
+            if (dual)
+            {
+                binds.Add(FluXisGameplayKeybind.KeyTaiko1D);
+                binds.Add(FluXisGameplayKeybind.KeyTaiko2D);
+                binds.Add(FluXisGameplayKeybind.KeyTaiko3D);
+                binds.Add(FluXisGameplayKeybind.KeyTaiko4D);
+            }
+
+            return binds.Select(b => new KeyBinding(GetDefaultFor(b), b));
+        }
 
         if (mode is >= 1 and <= 10)
         {
@@ -175,6 +193,16 @@ public partial class GameplayKeybindContainer : RealmKeyBindingContainer<FluXisG
         FluXisGameplayKeybind.Key10k8D => InputKey.I,
         FluXisGameplayKeybind.Key10k9D => InputKey.O,
         FluXisGameplayKeybind.Key10k10D => InputKey.P,
+
+        FluXisGameplayKeybind.KeyTaiko1 => InputKey.D,
+        FluXisGameplayKeybind.KeyTaiko2 => InputKey.F,
+        FluXisGameplayKeybind.KeyTaiko3 => InputKey.J,
+        FluXisGameplayKeybind.KeyTaiko4 => InputKey.K,
+
+        FluXisGameplayKeybind.KeyTaiko1D => InputKey.E,
+        FluXisGameplayKeybind.KeyTaiko2D => InputKey.R,
+        FluXisGameplayKeybind.KeyTaiko3D => InputKey.U,
+        FluXisGameplayKeybind.KeyTaiko4D => InputKey.I,
 
         _ => throw new ArgumentOutOfRangeException(nameof(bind), bind, null)
     };
@@ -332,4 +360,16 @@ public enum FluXisGameplayKeybind
     Key10k8D,
     Key10k9D,
     Key10k10D,
+
+    // Taiko
+    KeyTaiko1,
+    KeyTaiko2,
+    KeyTaiko3,
+    KeyTaiko4,
+
+    // Taiko dual (probably won't do it, but just in case)
+    KeyTaiko1D,
+    KeyTaiko2D,
+    KeyTaiko3D,
+    KeyTaiko4D
 }

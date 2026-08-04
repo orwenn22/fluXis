@@ -88,7 +88,7 @@ public partial class RulesetContainer : CompositeDrawable
         }.Concat(scrolls.Values.ToArray());
     }
 
-    protected virtual GameplayInput CreateInput() => new(IsPaused.GetBoundCopy(), MapInfo.RealmEntry!.KeyCount, MapInfo.IsDual);
+    protected virtual GameplayInput CreateInput() => new(IsPaused.GetBoundCopy(), MapInfo.RealmEntry!.KeyCount, MapInfo.IsDual, true);
 
     public HealthProcessor CreateHealthProcessor()
     {

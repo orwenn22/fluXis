@@ -1,7 +1,6 @@
 using System;
 using fluXis.Input;
 using fluXis.Map.Structures;
-using fluXis.Scoring.Enums;
 using fluXis.Screens.Gameplay.Input;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
@@ -18,10 +17,6 @@ public partial class DrawableTickNote : DrawableHitObject
 
     [Resolved]
     private GameplayInput input { get; set; }
-
-    private bool isBeingHeld;
-    private double? holdStartTime;
-    private bool directHit;
 
     private Circle followLine;
 
@@ -43,7 +38,7 @@ public partial class DrawableTickNote : DrawableHitObject
                 Anchor = Anchor.Centre,
                 Origin = Anchor.Centre
             },
-            Skin.GetTickNote(VisualLane, ObjectManager.KeyCount, Data.HoldTime > 0).With(x => x.RelativeSizeAxes = Axes.X)
+            Skin.GetTaikoTickNote().With(x => x.RelativeSizeAxes = Axes.X)
         };
     }
 
@@ -53,9 +48,6 @@ public partial class DrawableTickNote : DrawableHitObject
 
         if (Data.VisualLane > 1)
             X = ObjectManager.PositionAtLane(Data.VisualLane);
-
-        if (isBeingHeld)
-            UpdateJudgement(true);
 
         var next = Data.NextObject;
 
@@ -79,76 +71,19 @@ public partial class DrawableTickNote : DrawableHitObject
     {
         if (!byUser)
         {
-            var off = lagCompensation();
-            ApplyResult(off ?? HitWindows.TimingFor(HitWindows.Lowest));
+            ApplyResult(HitWindows.TimingFor(HitWindows.Lowest));
             return;
         }
 
-        if (offset >= 0 && !directHit)
-            return;
-
-        if (wouldMiss)
-        {
-            var off = lagCompensation();
-
-            if (off != null)
-            {
-                ApplyResult(off.Value);
-                return;
-            }
-        }
-
-        ObjectManager.PlayHitSound(Data, false);
-        ApplyResult(lagCompensation() ?? offset);
-        return;
-
-        double? lagCompensation()
-        {
-            double off;
-
-            if (isBeingHeld && holdStartTime != null)
-            {
-                var delta = holdStartTime.Value - Data.Time;
-
-                off = delta < 0 ? 0 : delta;
-            }
-            else
-                return null;
-
-            return off;
-        }
+        if (HitWindows.CanBeHit(offset))
+            ApplyResult(offset);
     }
 
     public override void OnPressed(FluXisGameplayKeybind key)
     {
-        if (key != Keybind)
+        if (!Column.IsFirst(this))
             return;
 
-        var flWindow = HitWindows.TimingFor(Judgement.Flawless);
-
-        if (Math.Abs(TimeDelta) < flWindow)
-        {
-            directHit = true;
-            UpdateJudgement(true);
-            return;
-        }
-
-        isBeingHeld = true;
-
-        var idx = input.Keys.IndexOf(key);
-        holdStartTime = input.PressTimes[idx];
-    }
-
-    public override void OnReleased(FluXisGameplayKeybind key)
-    {
-        if (key != Keybind)
-            return;
-
-        // believe it or not
-        // this works fine
         UpdateJudgement(true);
-
-        isBeingHeld = false;
-        holdStartTime = null;
     }
 }

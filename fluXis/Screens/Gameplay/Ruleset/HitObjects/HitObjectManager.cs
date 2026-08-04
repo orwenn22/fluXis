@@ -15,6 +15,9 @@ namespace fluXis.Screens.Gameplay.Ruleset.HitObjects;
 public partial class HitObjectManager : Container<HitObjectColumn>
 {
     [Resolved]
+    private ISkin skin { get; set; }
+
+    [Resolved]
     private SkinManager skinManager { get; set; }
 
     [Resolved]
@@ -25,9 +28,6 @@ public partial class HitObjectManager : Container<HitObjectColumn>
 
     [Resolved]
     private Hitsounding hitsounding { get; set; }
-
-    [Resolved]
-    private LaneSwitchManager laneSwitchManager { get; set; }
 
     private GameplayInput input => ruleset.Input;
 
@@ -47,10 +47,9 @@ public partial class HitObjectManager : Container<HitObjectColumn>
 
     public double VisualTimeOffset { get; set; } = 0;
 
-    public int KeyCount => playfield.RealmMap.KeyCount;
+    public int KeyCount => playfield.RealmMap.KeyCount; // TODO: get rid of this
 
-    public float HitPosition => DrawHeight - laneSwitchManager.HitPosition;
-    public float ReceptorOffset => DrawHeight - laneSwitchManager.ReceptorOffset;
+    public float HitPosition => DrawHeight - skin.SkinJson.Taiko.HitPosition - skin.SkinJson.Taiko.ColumnWidth / 2f;
 
     public bool Finished { get; private set; }
 
@@ -71,16 +70,7 @@ public partial class HitObjectManager : Container<HitObjectColumn>
     {
         RelativeSizeAxes = Axes.Both;
 
-        InternalChildrenEnumerable = Enumerable.Range(0, KeyCount)
-                                               .Select(i =>
-                                               {
-                                                   var lane = i + 1;
-
-                                                   if (ruleset.MapInfo.IsSplit)
-                                                       lane += KeyCount * playfield.Index;
-
-                                                   return new HitObjectColumn(ruleset.MapInfo, ruleset, this, lane);
-                                               });
+        InternalChild = new HitObjectColumn(ruleset.MapInfo, ruleset, this);
 
         useSnapColors = config.GetBindable<bool>(FluXisSetting.SnapColoring);
         hitsounds = config.GetBindable<bool>(FluXisSetting.Hitsounding);
@@ -92,15 +82,9 @@ public partial class HitObjectManager : Container<HitObjectColumn>
 
         if (!playfield.IsSubPlayfield)
         {
-            input.OnPress += key =>
+            input.OnPress += _ =>
             {
-                var lane = input.Keys.IndexOf(key) + 1;
-                lane -= KeyCount * playfield.Index;
-
-                if (lane > KeyCount || lane <= 0)
-                    return;
-
-                var hit = this[lane - 1].NextUp;
+                var hit = Child.NextUp;
 
                 if (hit == null)
                     return;
@@ -117,25 +101,7 @@ public partial class HitObjectManager : Container<HitObjectColumn>
 
     public float PositionAtLane(float lane)
     {
-        while (lane > KeyCount)
-            lane -= KeyCount;
-
-        var receptors = playfield.Receptors;
-        var x = 0f;
-
-        var frac = lane % 1;
-        var colWidth = skinManager.SkinJson.GetKeymode(KeyCount).ColumnWidth;
-
-        for (int i = 1; i < (int)lane; i++)
-        {
-            if (i > receptors.Count)
-                x += colWidth;
-            else
-                x += receptors[i - 1].Width;
-        }
-
-        x += frac * colWidth;
-        return x;
+        return 0;
     }
 
     public Easing EasingAtTime(double time)
@@ -149,18 +115,11 @@ public partial class HitObjectManager : Container<HitObjectColumn>
         return first?.Easing ?? Easing.None;
     }
 
-    public float WidthOfLane(int lane) => laneSwitchManager.WidthFor(lane);
+    public float WidthOfLane(int lane) => skin.SkinJson.Taiko.ColumnWidth;
 
     public DrawableHitObject CreateHitObject(HitObject hitObject)
     {
         var drawable = GetDrawableFor(hitObject);
-        var idx = hitObject.Lane - 1;
-
-        if (playfield.Index > 0 && !playfield.MapInfo.IsSplit)
-            idx += playfield.Index * (input.Keys.Count / 2);
-
-        if (input.Keys.Count > idx)
-            drawable.Keybind = input.Keys[idx];
 
         drawable.OnLoadComplete += _ =>
         {
@@ -187,12 +146,18 @@ public partial class HitObjectManager : Container<HitObjectColumn>
             case HitObjectType.Landmine:
                 return new DrawableLandmine(hit);
 
+            case HitObjectType.TaikoHit:
+                return new DrawableNote(hit);
+
+            case HitObjectType.TaikoStrong:
+                return new DrawableTaikoStrongHit(hit);
+
             default:
             {
                 if (hit.LongNote)
                     return new DrawableLongNote(hit);
 
-                return new DrawableNote(hit);
+                return new DrawableTaikoStrongHit(hit);
             }
         }
     }

@@ -33,14 +33,19 @@ public interface ISkin : IDisposable
     Drawable GetHealthBar(HealthProcessor processor);
 
     Drawable GetHitObject(int lane, int keyCount);
+    Drawable GetTaikoHitObject(bool isPrimary);
     Drawable GetTickNote(int lane, int keyCount, bool small);
+    Drawable GetTaikoTickNote();
     Drawable GetLandmine(int lane, int keyCount);
+    Drawable GetTaikoLandmine();
     Drawable GetLongNoteStart(int lane, int keyCount);
     Drawable GetLongNoteBody(int lane, int keyCount);
     Drawable GetLongNoteEnd(int lane, int keyCount);
 
     VisibilityContainer GetColumnLighting(int lane, int keyCount);
     Drawable GetReceptor(int lane, int keyCount, bool down);
+    Drawable GetTaikoReceptor();
+    Drawable GetTaikoReceptorDown(bool isPrimary);
     Drawable GetHitLine();
 
     AbstractJudgementText GetJudgement(Judgement judgement, bool isLate);

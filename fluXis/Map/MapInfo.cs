@@ -61,6 +61,9 @@ public class MapInfo
         set => extraPlayfields = Math.Clamp(value, 0, 9);
     }
 
+    [JsonProperty("gamemode", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public int Gamemode { get; set; } = 0; // 0: fluxis , 1: taiko
+
     [JsonIgnore]
     private int extraPlayfields;
 

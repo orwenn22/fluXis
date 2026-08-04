@@ -29,8 +29,6 @@ public partial class DrawableLandmine : DrawableHitObject
     [Resolved]
     private GameplayInput input { get; set; }
 
-    private bool isBeingHeld;
-
     // next non-landmine HitObject on the column. Only set if the landmine is in the hit window of the next note, null otherwise.
     private HitObject nextNote;
 
@@ -44,7 +42,7 @@ public partial class DrawableLandmine : DrawableHitObject
     {
         InternalChildren = new[]
         {
-            Skin.GetLandmine(VisualLane, ObjectManager.KeyCount).With(d => d.RelativeSizeAxes = Axes.X),
+            Skin.GetTaikoLandmine().With(d => d.RelativeSizeAxes = Axes.X),
         };
 
         AlwaysPresent = true;
@@ -53,32 +51,11 @@ public partial class DrawableLandmine : DrawableHitObject
         nextNote = findNextNote();
     }
 
-    protected override void Update()
-    {
-        base.Update();
-
-        if (isBeingHeld)
-            UpdateJudgement(true);
-    }
-
     protected override void CheckJudgement(bool byUser, double offset)
     {
         if (!byUser)
         {
-            if (isBeingHeld)
-            {
-                ApplyResult(0);
-                return;
-            }
-
             ApplyResult(-HitWindows.TimingFor(Judgement.Flawless));
-            return;
-        }
-
-        if (isBeingHeld)
-        {
-            if (offset < 0)
-                ApplyResult(0);
             return;
         }
 
@@ -88,21 +65,8 @@ public partial class DrawableLandmine : DrawableHitObject
 
     public override void OnPressed(FluXisGameplayKeybind key)
     {
-        if (key != Keybind)
-            return;
-
         if (Column.IsFirst(this))
             UpdateJudgement(true);
-
-        isBeingHeld = true;
-    }
-
-    public override void OnReleased(FluXisGameplayKeybind key)
-    {
-        if (key != Keybind)
-            return;
-
-        isBeingHeld = false;
     }
 
     private HitObject findNextNote()

@@ -32,7 +32,7 @@ public class AutoGenerator
         dual = map.IsDual;
         split = map.DualMode == DualMode.Separate;
 
-        keys = GameplayInput.GetKeys(mode, dual).ToList();
+        keys = GameplayInput.GetKeys(mode, dual, false).ToList(); //TODO: handle taiko
     }
 
     public Replay Generate()

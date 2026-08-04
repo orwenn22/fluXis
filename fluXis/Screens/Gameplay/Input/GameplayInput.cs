@@ -18,21 +18,39 @@ public partial class GameplayInput : Drawable, IKeyBindingHandler<FluXisGameplay
     public event Action<FluXisGameplayKeybind> OnPress;
     public event Action<FluXisGameplayKeybind> OnRelease;
 
+    public readonly bool Taiko;
     public readonly bool Dual;
     private readonly Bindable<bool> paused;
 
-    public GameplayInput(Bindable<bool> paused, int mode = 4, bool dual = false)
+    public GameplayInput(Bindable<bool> paused, int mode = 4, bool dual = false, bool taiko = false)
     {
         this.paused = paused;
         Dual = dual;
+        Taiko = taiko;
 
-        Keys = GetKeys(mode, dual).ToList();
+        Keys = GetKeys(mode, dual, taiko).ToList();
 
         if (dual)
             mode *= 2;
 
-        Pressed = new bool[mode];
-        PressTimes = new double[mode];
+        if (Taiko)
+        {
+            if (dual)
+            {
+                Pressed = new bool[8];
+                PressTimes = new double[8];
+            }
+            else
+            {
+                Pressed = new bool[4];
+                PressTimes = new double[4];
+            }
+        }
+        else
+        {
+            Pressed = new bool[mode];
+            PressTimes = new double[mode];
+        }
     }
 
     public virtual bool OnPressed(KeyBindingPressEvent<FluXisGameplayKeybind> e) => !e.Repeat && PressKey(e.Action);
@@ -65,9 +83,27 @@ public partial class GameplayInput : Drawable, IKeyBindingHandler<FluXisGameplay
         OnRelease?.Invoke(key);
     }
 
-    public static FluXisGameplayKeybind[] GetKeys(int mode, bool dual)
+    public static FluXisGameplayKeybind[] GetKeys(int mode, bool dual, bool taiko)
     {
         var binds = new List<FluXisGameplayKeybind>();
+
+        if (taiko)
+        {
+            binds.Add(FluXisGameplayKeybind.KeyTaiko1);
+            binds.Add(FluXisGameplayKeybind.KeyTaiko2);
+            binds.Add(FluXisGameplayKeybind.KeyTaiko3);
+            binds.Add(FluXisGameplayKeybind.KeyTaiko4);
+
+            if (dual)
+            {
+                binds.Add(FluXisGameplayKeybind.KeyTaiko1D);
+                binds.Add(FluXisGameplayKeybind.KeyTaiko2D);
+                binds.Add(FluXisGameplayKeybind.KeyTaiko3D);
+                binds.Add(FluXisGameplayKeybind.KeyTaiko4D);
+            }
+
+            return binds.ToArray();
+        }
 
         if (mode is < 1 or > 10)
             return Array.Empty<FluXisGameplayKeybind>();

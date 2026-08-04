@@ -11,11 +11,11 @@ public class OsuHitObject
     public float StartTime { get; init; }
     public OsuHitObjectType Type { get; init; }
     public OsuHitSound HitSound { get; init; }
-    public OsuSampleSet SampleSet { get; init; }
+    public OsuSampleSet SampleSet { get; set; }
     public string CustomHitSound { get; set; }
     public float EndTime { get; set; }
 
-    public HitObject ToHitObjectInfo(OsuMap map)
+    public HitObject ToHitObjectInfo(OsuMap map, bool taiko = false)
     {
         var holdTime = 0f;
 
@@ -37,13 +37,30 @@ public class OsuHitObject
                 CustomHitSound = getSound(map.MapFiles, SampleSet, OsuHitSound.Normal, ":normal");
         }
 
-        return new HitObject
+        if (taiko)
         {
-            Time = StartTime,
-            Lane = (int)Math.Floor(Position.X * map.CircleSize / 512) + 1,
-            HoldTime = holdTime,
-            HitSound = CustomHitSound
-        };
+            bool secondary = HitSound.HasFlag(OsuHitSound.Clap) || HitSound.HasFlag(OsuHitSound.Whistle);
+            bool strong = HitSound.HasFlag(OsuHitSound.Finish);
+
+            return new HitObject
+            {
+                Time = StartTime,
+                Lane = 1,
+                Type = strong ? HitObjectType.TaikoStrong : HitObjectType.TaikoHit,
+                TaikoIsPrimary = !secondary,
+                HitSound = CustomHitSound
+            };
+        }
+        else
+        {
+            return new HitObject
+            {
+                Time = StartTime,
+                Lane = (int)Math.Floor(Position.X * map.CircleSize / 512) + 1,
+                HoldTime = holdTime,
+                HitSound = CustomHitSound
+            };
+        }
     }
 
     private string getSound(List<string> files, OsuSampleSet set, OsuHitSound sound, string fallback)

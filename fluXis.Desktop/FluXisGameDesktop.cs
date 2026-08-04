@@ -5,7 +5,6 @@ using fluXis.Desktop.Integration;
 using fluXis.Integration;
 using fluXis.IPC;
 using Midori.Utils.Extensions;
-using osu.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Platform;
 
@@ -13,7 +12,7 @@ namespace fluXis.Desktop;
 
 public partial class FluXisGameDesktop : FluXisGame
 {
-    protected override bool RequiresSteam => true;
+    protected override bool RequiresSteam => false;
 
     private IPCImportChannel ipc;
 
@@ -43,8 +42,8 @@ public partial class FluXisGameDesktop : FluXisGame
     {
         ipc = new IPCImportChannel(Host, this);
 
-        if (RuntimeInfo.IsUnix)
-            CreateComponentLoadTask(new LinuxMediaAdapter(), Add);
+        // if (RuntimeInfo.IsUnix)
+        //     CreateComponentLoadTask(new LinuxMediaAdapter(), Add);
     }
 
     protected override void LoadComplete()
@@ -70,7 +69,7 @@ public partial class FluXisGameDesktop : FluXisGame
         ipc?.Dispose();
     }
 
-    protected override ISteamManager CreateSteam() => new SteamManager();
+    // protected override ISteamManager CreateSteam() => new SteamManager();
 
     protected override IDiscordManager CreateDiscord() => new DiscordManager
     {

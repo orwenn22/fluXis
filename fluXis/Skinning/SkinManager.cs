@@ -496,13 +496,22 @@ public partial class SkinManager : Component, ISkin, IDragDropHandler
     Drawable ISkin.GetHealthBar(HealthProcessor processor) => currentSkin.GetHealthBar(processor) ?? defaultSkin.GetHealthBar(processor);
 
     Drawable ISkin.GetHitObject(int lane, int keyCount) => currentSkin.GetHitObject(lane, keyCount) ?? defaultSkin.GetHitObject(lane, keyCount);
+    Drawable ISkin.GetTaikoHitObject(bool isPrimary) => currentSkin.GetTaikoHitObject(isPrimary) ?? defaultSkin.GetTaikoHitObject(isPrimary);
+
     Drawable ISkin.GetTickNote(int lane, int keyCount, bool small) => currentSkin.GetTickNote(lane, keyCount, small) ?? defaultSkin.GetTickNote(lane, keyCount, small);
+    Drawable ISkin.GetTaikoTickNote() => currentSkin.GetTaikoTickNote() ?? defaultSkin.GetTaikoTickNote();
+
     Drawable ISkin.GetLandmine(int lane, int keyCount) => currentSkin.GetLandmine(lane, keyCount) ?? defaultSkin.GetLandmine(lane, keyCount);
+    Drawable ISkin.GetTaikoLandmine() => currentSkin.GetTaikoLandmine() ?? defaultSkin.GetTaikoLandmine();
+
     Drawable ISkin.GetLongNoteStart(int lane, int keyCount) => currentSkin.GetLongNoteStart(lane, keyCount) ?? defaultSkin.GetLongNoteStart(lane, keyCount);
     Drawable ISkin.GetLongNoteBody(int lane, int keyCount) => currentSkin.GetLongNoteBody(lane, keyCount) ?? defaultSkin.GetLongNoteBody(lane, keyCount);
     Drawable ISkin.GetLongNoteEnd(int lane, int keyCount) => currentSkin.GetLongNoteEnd(lane, keyCount) ?? defaultSkin.GetLongNoteEnd(lane, keyCount);
     VisibilityContainer ISkin.GetColumnLighting(int lane, int keyCount) => currentSkin.GetColumnLighting(lane, keyCount) ?? defaultSkin.GetColumnLighting(lane, keyCount);
     Drawable ISkin.GetReceptor(int lane, int keyCount, bool down) => currentSkin.GetReceptor(lane, keyCount, down) ?? defaultSkin.GetReceptor(lane, keyCount, down);
+    public Drawable GetTaikoReceptor() => currentSkin.GetTaikoReceptor() ?? defaultSkin.GetTaikoReceptor();
+    public Drawable GetTaikoReceptorDown(bool isPrimary) => currentSkin.GetTaikoReceptorDown(isPrimary) ?? defaultSkin.GetTaikoReceptorDown(isPrimary);
+
     Drawable ISkin.GetHitLine() => currentSkin.GetHitLine() ?? defaultSkin.GetHitLine();
     AbstractJudgementText ISkin.GetJudgement(Judgement judgement, bool isLate) => currentSkin.GetJudgement(judgement, isLate) ?? defaultSkin.GetJudgement(judgement, isLate);
 

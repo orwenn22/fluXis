@@ -37,6 +37,9 @@ public class HitObject : ITimedObject
     [JsonProperty("type")]
     public HitObjectType Type { get; set; }
 
+    [JsonProperty("taiko-is-primary", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    public bool TaikoIsPrimary { get; set; }
+
     [JsonIgnore]
     public bool LongNote => HoldTime > 0 && Type == HitObjectType.Normal;
 
@@ -97,5 +100,9 @@ public enum HitObjectType
 {
     Normal,
     Tick,
-    Landmine
+    Landmine,
+
+    // taiko-only
+    TaikoHit = 100,
+    TaikoStrong = 101,
 }

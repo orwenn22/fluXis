@@ -11,6 +11,8 @@ public interface ICustomColorProvider
     Colour4 Middle { get; }
 
     bool HasColorFor(int lane, int keyCount, out Colour4 colour);
+    bool HasColorFor(bool isPrimary, out Colour4 colour); // taiko impl
+    bool HasMiddleColor(out Colour4 colour); // taiko impl (for receptor)
     Colour4 GetColor(int index, Colour4 fallback);
 
     void Register(ColorableSkinDrawable draw, MapColor index) { }

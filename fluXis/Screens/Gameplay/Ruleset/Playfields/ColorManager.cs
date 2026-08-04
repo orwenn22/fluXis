@@ -85,6 +85,18 @@ public partial class ColorManager : Component, ICustomColorProvider
         return colour != Colour4.Transparent;
     }
 
+    public bool HasColorFor(bool isPrimary, out Colour4 colour)
+    {
+        colour = isPrimary ? Primary : Secondary;
+        return colour != Colour4.Transparent;
+    }
+
+    public bool HasMiddleColor(out Colour4 colour)
+    {
+        colour = Middle;
+        return colour != Colour4.Transparent;
+    }
+
     public Colour4 GetColor(int index, Colour4 fallback)
     {
         var colors = new[]

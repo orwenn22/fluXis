@@ -33,6 +33,7 @@ public partial class DrawableHitObject : CompositeDrawable
 
     protected double TimeDelta => Data.Time - Time.Current;
 
+    //TODO: get rid of this
     protected int VisualLane
     {
         get
@@ -45,8 +46,6 @@ public partial class DrawableHitObject : CompositeDrawable
             return lane;
         }
     }
-
-    public FluXisGameplayKeybind Keybind { get; set; }
 
     public virtual bool CanBeRemoved => false;
     public virtual HitWindows HitWindows => Ruleset.HitWindows;
@@ -63,8 +62,12 @@ public partial class DrawableHitObject : CompositeDrawable
     private void load()
     {
         AutoSizeAxes = Axes.Y;
-        Origin = Anchor.BottomLeft;
+        Anchor = Anchor.TopCentre;
+        Origin = Anchor.Centre;
         Masking = true;
+
+        X = 0;
+        Width = Data.Type == HitObjectType.TaikoStrong ? Skin.SkinJson.Taiko.ColumnWidth : Skin.SkinJson.Taiko.ColumnWidth / 1.5f;
 
         var group = Data.ScrollGroup ?? Column.DefaultScrollGroup;
         ScrollVelocityTime = group.PositionFromTime(Data.Time);
@@ -83,9 +86,7 @@ public partial class DrawableHitObject : CompositeDrawable
     {
         base.Update();
 
-        X = ObjectManager.PositionAtLane(Data.Lane);
         Y = Column.PositionAtTime(ScrollVelocityTime, Data.ScrollGroup, Data.StartEasing);
-        Width = ObjectManager.WidthOfLane(Data.Lane);
     }
 
     protected override void Dispose(bool isDisposing)
