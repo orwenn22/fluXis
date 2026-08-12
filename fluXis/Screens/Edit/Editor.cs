@@ -201,6 +201,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
 
         RegisterTool(new VibratoTool());
         RegisterTool(new SvEasingTool());
+        RegisterTool(new HitPosOffsetTool());
     }
 
     [BackgroundDependencyLoader]
@@ -459,6 +460,7 @@ public partial class Editor : FluXisScreen, IKeyBindingHandler<FluXisGlobalKeybi
                                     new MenuActionItem("AV to SV", Phosphor.Bold.Star, () => ChartingContainer?.AVToSV()),
                                     new MenuActionItem("Vibrato", Phosphor.Bold.Vibrate, () => windowContainer.Add(new VibratoWindow { X = 100, Y = 100, })),
                                     new MenuActionItem("SV easing", Phosphor.Bold.Star, () => windowContainer.Add(new SvEasingWindow { X = 100, Y = 100, })),
+                                    new MenuActionItem("Hitpos offset", Phosphor.Bold.Star, () => windowContainer.Add(new HitPosOffsetWindow { X = 100, Y = 100, })),
                                 }),
                             }
                         },
