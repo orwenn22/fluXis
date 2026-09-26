@@ -104,6 +104,7 @@ public partial class EditorPlayfield : Container, ITimePositionProvider
                 Origin = Anchor.BottomCentre,
                 Y = -EditorHitObjectContainer.HITPOSITION
             },
+            new TimingBarTagContainer(),
             new TimingTagContainer(),
             new EffectTagContainer(),
             modComments,
