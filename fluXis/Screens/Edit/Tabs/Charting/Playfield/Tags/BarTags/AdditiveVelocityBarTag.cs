@@ -3,6 +3,7 @@ using fluXis.Graphics.UserInterface.Color;
 using fluXis.Map.Structures;
 using fluXis.Map.Structures.Bases;
 using osu.Framework.Graphics;
+using osu.Framework.Input.Events;
 
 namespace fluXis.Screens.Edit.Tabs.Charting.Playfield.Tags.BarTags;
 
@@ -17,5 +18,11 @@ public partial class AdditiveVelocityBarTag : BarTag
     public AdditiveVelocityBarTag(BarTagContainer parent, ITimedObject timedObject)
         : base(parent, timedObject)
     {
+    }
+
+    protected override bool OnClick(ClickEvent e)
+    {
+        Editor.ChangeToTab<DesignTab>(x => x.Container.Sidebar.ShowPoint(additiveVelocity));
+        return true;
     }
 }
